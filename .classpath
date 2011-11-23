@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/usr/share/jgrapht/lib/jgrapht.jar" sourcepath="/usr/share/jgrapht/sources/jgrapht-src.zip"/>
-	<classpathentry kind="lib" path="/usr/share/jgraph/lib/jgraph.jar" sourcepath="/usr/share/jgraph/sources/jgraph-src.zip"/>
+	<classpathentry kind="lib" path="lib/jgraph/jgraph.jar" sourcepath="lib/jgraph/jgraph-src.zip"/>
+	<classpathentry kind="lib" path="lib/jgrapht/jgrapht.jar" sourcepath="lib/jgrapht/jgrapht-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
