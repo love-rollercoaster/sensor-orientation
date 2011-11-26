@@ -1,6 +1,6 @@
 import java.awt.Color;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+//import java.awt.geom.Rectangle2D;
 
 import javax.swing.BorderFactory;
 
@@ -40,8 +40,8 @@ public class JGraphConverter {
             jgraph.addVertex(sensor);
         }
 
-        for (SensorUndirectedEdge edge : graph.getEdges()) {
-            jgraph.addEdge(edge.getFirst(), edge.getSecond());
+        for (SensorEdge edge : graph.getEdges()) {
+            jgraph.addEdge(edge.getSource(), edge.getDestination());
         }
 
     }

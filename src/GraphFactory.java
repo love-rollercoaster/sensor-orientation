@@ -7,8 +7,8 @@ public class GraphFactory {
         return new ProximityGraph(generateEdges(sensors), sensors);
     }
 
-    private Set<SensorUndirectedEdge> generateEdges(Set<Sensor> sensors) {
-        Set<SensorUndirectedEdge> edges = new HashSet<SensorUndirectedEdge>(sensors.size());
+    private Set<SensorEdge> generateEdges(Set<Sensor> sensors) {
+        Set<SensorEdge> edges = new HashSet<SensorEdge>(sensors.size());
 
         for (Sensor currentSensor : sensors) {
 
@@ -19,7 +19,7 @@ public class GraphFactory {
                 }
 
                 if (currentSensor.canReach(otherSensor)) {
-                    edges.add(new SensorUndirectedEdge(currentSensor, otherSensor));
+                    edges.add(new SensorEdge(currentSensor, otherSensor));
                 }
             }
         }

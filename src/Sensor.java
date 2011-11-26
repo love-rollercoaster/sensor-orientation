@@ -29,7 +29,7 @@ public class Sensor {
     public double getAngle() {
         return angle;
     }
-
+//TODO: Should this getRange be a static function?
     public double getRange() {
         return range;
     }
