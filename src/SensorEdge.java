@@ -3,14 +3,10 @@ import java.util.Set;
 
 import org.jgrapht.graph.DefaultEdge;
 
-// immutable
-public class SensorEdge extends DefaultEdge{
-    /**
-	 *  Automatically generated when I extended DefaultEdge. No idea what it's for.
-	 */
-	private static final long serialVersionUID = -1387584016973135099L;
+public class SensorEdge extends DefaultEdge {
+    private static final long serialVersionUID = -1387584016973135099L;
 
-	private final int hashCode;
+    private final int hashCode;
 
     private final Sensor source;
     private final Sensor destination;
@@ -29,13 +25,6 @@ public class SensorEdge extends DefaultEdge{
         return destination;
     }
 
-
-
-    @Override
-    public String toString() {
-        return "SensorEdge [source=" + source + ", destination=" + destination + "]";
-    }
-
     @Override
     public int hashCode() {
         return this.hashCode;
@@ -50,7 +39,7 @@ public class SensorEdge extends DefaultEdge{
         if (!(other instanceof SensorEdge))
             return false;
 
-        return this.equals((SensorEdge)other);
+        return this.equals((SensorEdge) other);
     }
 
     private boolean equals(SensorEdge edge) {
