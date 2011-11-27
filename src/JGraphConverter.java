@@ -36,11 +36,11 @@ public class JGraphConverter {
 
     public void convertExistingJGraphTFromProximityGraph(ListenableGraph<Sensor, DefaultEdge> jgraph, ProximityGraph graph) {
 
-        for (Sensor sensor : graph.getVertices()) {
+        for (Sensor sensor : graph.vertexSet()) {
             jgraph.addVertex(sensor);
         }
 
-        for (SensorEdge edge : graph.getEdges()) {
+        for (SensorEdge edge : graph.edgeSet()) {
             jgraph.addEdge(edge.getSource(), edge.getDestination());
         }
 

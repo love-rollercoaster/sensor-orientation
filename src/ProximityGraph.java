@@ -10,7 +10,7 @@ import org.jgrapht.WeightedGraph;
 public class ProximityGraph implements UndirectedGraph<Sensor, SensorEdge> {
 	private final Set<SensorEdge> edges;
 	private final Set<Sensor> vertices;
-	private SensorEdgeFactory edgeFactory;
+	private SensorEdgeFactory edgeFactory = null;
 
 	public ProximityGraph(Set<SensorEdge> edges, Set<Sensor> vertices) {
 		this.edges = edges;
@@ -18,68 +18,87 @@ public class ProximityGraph implements UndirectedGraph<Sensor, SensorEdge> {
 		edgeFactory = new SensorEdgeFactory();
 	}
 
-	public Set<SensorEdge> getEdges() {
-		return edges;
-	}
-
-	public Set<Sensor> getVertices() {
-		return vertices;
-	}
 
 	/**
 	 * Returns a set of all edges connecting source vertex to target vertex if
-	 * such vertices exist in this graph. Because this is an undirected graph we
-	 * check both ways.
+	 * such vertices exist in this graph. If any of the vertices does not exist
+	 * or is null, returns null. If both vertices exist but no edges found,
+	 * returns an empty set.
+	 * 
+	 * In undirected graphs, some of the returned edges may have their source
+	 * and target vertices in the opposite order. In simple graphs the returned
+	 * set is either singleton set or empty set. Because this is an undirected
+	 * graph we check both ways.
+	 * 
+	 * @Parameters: sourceVertex - source vertex of the edge. targetVertex -
+	 *              target vertex of the edge.
+	 * @Returns: a set of all edges connecting source vertex to target vertex.
 	 */
 	public Set<SensorEdge> getAllEdges(Sensor sourceVertex, Sensor targetVertex) {
 		Set<SensorEdge> result = null;
-		if (vertices.contains(sourceVertex) && vertices.contains(targetVertex)
-				&& (sourceVertex != null) && (targetVertex != null)) {
-			result = new HashSet<SensorEdge>();
-			Iterator<SensorEdge> vertexIt = edges.iterator();
-			while (vertexIt.hasNext()) {
-				SensorEdge myEdge = vertexIt.next();
-				if (myEdge.getSource().equals(sourceVertex)) {
-					if (myEdge.getDestination().equals(targetVertex)) {
-						result.add(myEdge);
+		if ((sourceVertex != null) && (targetVertex != null)) {
+			if (vertices.contains(sourceVertex)
+					&& vertices.contains(targetVertex)) {
+				result = new HashSet<SensorEdge>();
+				Iterator<SensorEdge> vertexIt = edges.iterator();
+				while (vertexIt.hasNext()) {
+					SensorEdge myEdge = vertexIt.next();
+					if (myEdge.getSource().equals(sourceVertex)) {
+						if (myEdge.getDestination().equals(targetVertex)) {
+							result.add(myEdge);
+						}
+					} else if (myEdge.getSource().equals(targetVertex)) {
+						if (myEdge.getDestination().equals(sourceVertex)) {
+							result.add(myEdge);
+						}
 					}
-				} else if (myEdge.getSource().equals(targetVertex)) {
-					if (myEdge.getDestination().equals(sourceVertex)) {
-						result.add(myEdge);
-					}
-				}
-			} /* while(vertexIt.hasNext()) */
+				} /* while(vertexIt.hasNext()) */
+			}
 		}
 		return result;
 	}
 
 	/**
 	 * Returns an edge connecting source vertex to target vertex if such
-	 * vertices and such edge exist in this graph. Because this is an undirected
-	 * graph we check both ways. Note we'll return the first we find.
+	 * vertices and such edge exist in this graph. Otherwise returns null. If
+	 * any of the specified vertices is null returns null. Because this is an
+	 * undirected graph we check both ways. Note we'll return the first we find.
+	 * In undirected graphs, the returned edge may have its source and target
+	 * vertices in the opposite order.
+	 * 
+	 * @Parameters: sourceVertex - source vertex of the edge. targetVertex -
+	 *              target vertex of the edge.
+	 * @Returns: an edge connecting source vertex to target vertex.
+	 * 
 	 */
 	public SensorEdge getEdge(Sensor sourceVertex, Sensor targetVertex) {
-		if (vertices.contains(sourceVertex) && vertices.contains(targetVertex)
-				&& (sourceVertex != null) && (targetVertex != null)) {
-			Iterator<SensorEdge> vertexIt = edges.iterator();
-			while (vertexIt.hasNext()) {
-				SensorEdge myEdge = vertexIt.next();
-				if (myEdge.getSource().equals(sourceVertex)) {
-					if (myEdge.getDestination().equals(targetVertex)) {
-						return myEdge;
+		if((sourceVertex != null) && (targetVertex != null)){
+			if (vertices.contains(sourceVertex) && vertices.contains(targetVertex)) {
+				Iterator<SensorEdge> vertexIt = edges.iterator();
+				while (vertexIt.hasNext()) {
+					SensorEdge myEdge = vertexIt.next();
+					if (myEdge.getSource().equals(sourceVertex)) {
+						if (myEdge.getDestination().equals(targetVertex)) {
+							return myEdge;
+						}
+					} else if (myEdge.getSource().equals(targetVertex)) {
+						if (myEdge.getDestination().equals(sourceVertex)) {
+							return myEdge;
+						}
 					}
-				} else if (myEdge.getSource().equals(targetVertex)) {
-					if (myEdge.getDestination().equals(sourceVertex)) {
-						return myEdge;
-					}
-				}
-			} /* while(vertexIt.hasNext()) */
+				} /* while(vertexIt.hasNext()) */
+			}			
 		}
 		return null;
 	}
 
 	/**
-	 * Returns the edge factory using which this graph creates new edges.
+	 * Returns the edge factory using which this graph creates new edges. The
+	 * edge factory is defined when the graph is constructed and must not be
+	 * modified.
+	 * 
+	 * @Returns: the edge factory using which this graph creates new edges.
+	 * 
 	 */
 	public EdgeFactory<Sensor, SensorEdge> getEdgeFactory() {
 		return edgeFactory;
@@ -89,7 +108,7 @@ public class ProximityGraph implements UndirectedGraph<Sensor, SensorEdge> {
 	 * Creates a new edge in this graph, going from the source vertex to the
 	 * target vertex, and returns the created edge. Some graphs do not allow
 	 * edge-multiplicity. In such cases, if the graph already contains an edge
-	 * from the specified source to the specified target, than this method does
+	 * from the specified source to the specified target, then this method does
 	 * not change the graph and returns null.
 	 * 
 	 * The source and target vertices must already be contained in this graph.
@@ -158,11 +177,13 @@ public class ProximityGraph implements UndirectedGraph<Sensor, SensorEdge> {
 			throw new NullPointerException();
 		}
 		if (!vertices.contains(sourceVertex)
-				|| !vertices.contains(targetVertex)) {
+				|| !vertices.contains(targetVertex)
+				|| !sourceVertex.equals(e.getSource())
+				|| !targetVertex.equals(e.getDestination())) {
 			throw new IllegalArgumentException();
 		}
 		if (!(e instanceof SensorEdge)) {
-			// Not sure if I'm understanding this rule right...
+			// FIXME Not sure if I'm understanding this rule right...
 			// Are we supposed to treat e like a pointer, assign it to what the
 			// factory returns and return it indirectly?
 			throw new java.lang.ClassCastException();
@@ -355,7 +376,8 @@ public class ProximityGraph implements UndirectedGraph<Sensor, SensorEdge> {
 	public Set<SensorEdge> removeAllEdges(Sensor sourceVertex,
 			Sensor targetVertex) {
 		Set<SensorEdge> result = null;
-		if ((sourceVertex != null) && (targetVertex != null)) {
+		if ((sourceVertex != null) && (targetVertex != null)
+				&& containsVertex(sourceVertex) && containsVertex(targetVertex)) {
 			result = new HashSet<SensorEdge>();
 			SensorEdge temp = null;
 			do {
@@ -435,7 +457,7 @@ public class ProximityGraph implements UndirectedGraph<Sensor, SensorEdge> {
 		if (e != null) {
 			// This check is probably unnecessary because the remove function
 			// does it for us, but better to do it.
-			if (edges.contains(e)) {
+			if (containsEdge(e)) {
 				// This should set it to true
 				result = edges.remove(e);
 			}
@@ -540,16 +562,18 @@ public class ProximityGraph implements UndirectedGraph<Sensor, SensorEdge> {
 	 */
 	public int degreeOf(Sensor vertex) {
 		int count = 0;
-		//Doesn't say to do this check, but better than not...
-		if(containsVertex(vertex)){
-			Iterator<SensorEdge> edgeIt = edges.iterator();
-			while (edgeIt.hasNext()) {
-				SensorEdge myEdge = edgeIt.next();
-				if (myEdge.getSource().equals(vertex)
-						|| myEdge.getDestination().equals(vertex)) {
-					++count;
-				}
-			} /* while(vertexIt.hasNext()) */		
+		// Doesn't say to do this check, but better than not...
+		if(vertex != null){
+			if (containsVertex(vertex)) {
+				Iterator<SensorEdge> edgeIt = edges.iterator();
+				while (edgeIt.hasNext()) {
+					SensorEdge myEdge = edgeIt.next();
+					if (myEdge.getSource().equals(vertex)
+							|| myEdge.getDestination().equals(vertex)) {
+						++count;
+					}
+				} /* while(vertexIt.hasNext()) */
+			}			
 		}
 		return count;
 	}
