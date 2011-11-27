@@ -6,6 +6,8 @@ import java.util.Set;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.WeightedGraph;
+import org.jgrapht.alg.*;
+
 
 public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 	private final Set<SensorEdge> edges;
@@ -15,6 +17,8 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 	// grabbing from one sensor will be fine
 	private Double anglePhi;
 	private Double range;
+	private ProximityGraph proxGraph;
+
 
 	public TransmissionGraph(Set<SensorEdge> myEdges, Set<Sensor> myVertices) {
 		edges = myEdges;
@@ -28,12 +32,11 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 				range = s.getRange();
 			}
 		}
-		if (edgeFactory == null) {
-			edgeFactory = new SensorEdgeFactory();
-		}
+		edgeFactory = new SensorEdgeFactory();
+		proxGraph = new ProximityGraph(myEdges, myVertices);
 	}
 
-	// TODO Clean this up. If we use getters or something it would be better...
+	// TODO Clean this up. If we use getters or something for angle/range it would be better...
 	public TransmissionGraph(TransmissionGraph toCopy) {
 		edges = toCopy.edgeSet();
 		vertices = toCopy.vertexSet();
@@ -46,9 +49,8 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 				range = s.getRange();
 			}
 		}
-		if (edgeFactory == null) {
-			edgeFactory = new SensorEdgeFactory();
-		}
+		edgeFactory = new SensorEdgeFactory();
+		proxGraph = new ProximityGraph(edges, vertices);
 	}
 
 	public TransmissionGraph(ProximityGraph toCopy) {
@@ -63,9 +65,8 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 				range = s.getRange();
 			}
 		}
-		if (edgeFactory == null) {
-			edgeFactory = new SensorEdgeFactory();
-		}
+		edgeFactory = new SensorEdgeFactory();
+		proxGraph = toCopy;
 	}
 
 	/**
