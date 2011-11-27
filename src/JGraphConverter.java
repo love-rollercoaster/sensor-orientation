@@ -29,19 +29,19 @@ public class JGraphConverter {
         ListenableGraph<Sensor, DefaultEdge> jgrapht = new ListenableUndirectedGraph<Sensor, DefaultEdge>(
                 DefaultEdge.class);
 
-        convertExistingJGraphTFromProximityGraph(jgrapht, graph);
+        updateJGraphTFromProximityGraph(jgrapht, graph);
 
         return jgrapht;
     }
 
-    public void convertExistingJGraphTFromProximityGraph(ListenableGraph<Sensor, DefaultEdge> jgraph, ProximityGraph graph) {
+    public void updateJGraphTFromProximityGraph(ListenableGraph<Sensor, DefaultEdge> jgrapht, ProximityGraph graph) {
 
         for (Sensor sensor : graph.vertexSet()) {
-            jgraph.addVertex(sensor);
+            jgrapht.addVertex(sensor);
         }
 
         for (SensorEdge edge : graph.edgeSet()) {
-            jgraph.addEdge(edge.getSource(), edge.getDestination());
+            jgrapht.addEdge(edge.getSource(), edge.getDestination());
         }
 
     }
