@@ -24,7 +24,7 @@ public class SensorDrawingUtils {
     public static void PaintSensorRange(Graphics g, Sensor sensor) {
         Point2D sensorCenter = ComputeSensorScreenPosition(sensor);
 
-        double radius = sensor.getRange();
+        double radius = Sensor.GetRange();
         double x = sensorCenter.getX() - radius / 2.0;
         double y = sensorCenter.getY() - radius / 2.0;
 

@@ -8,65 +8,25 @@ import org.jgrapht.EdgeFactory;
 import org.jgrapht.WeightedGraph;
 
 public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
-	private final Set<SensorEdge> edges;
-	private final Set<Sensor> vertices;
-	private SensorEdgeFactory edgeFactory = null;
-	// I think the sensors are all supposed to have the same range and angle so
-	// grabbing from one sensor will be fine
-	private Double anglePhi;
-	private Double range;
+    private final Set<SensorEdge> edges;
+    private final Set<Sensor> vertices;
+    private final SensorEdgeFactory edgeFactory = new SensorEdgeFactory();
 
-	public TransmissionGraph(Set<SensorEdge> myEdges, Set<Sensor> myVertices) {
-		edges = myEdges;
-		vertices = myVertices;
-		if (!vertices.isEmpty()) {
-			Iterator<Sensor> verticesIterator = vertices.iterator();
-			// This next check should be unnecessary
-			if (verticesIterator.hasNext()) {
-				Sensor s = verticesIterator.next();
-				anglePhi = s.getAngle();
-				range = s.getRange();
-			}
-		}
-		if (edgeFactory == null) {
-			edgeFactory = new SensorEdgeFactory();
-		}
-	}
+    // I think the sensors are all supposed to have the same range and angle so
+    // grabbing from one sensor will be fine
+    private Double anglePhi;
+    private Double range;
 
-	// TODO Clean this up. If we use getters or something it would be better...
-	public TransmissionGraph(TransmissionGraph toCopy) {
-		edges = toCopy.edgeSet();
-		vertices = toCopy.vertexSet();
-		if (!vertices.isEmpty()) {
-			Iterator<Sensor> verticesIterator = vertices.iterator();
-			// This next check should be unnecessary
-			if (verticesIterator.hasNext()) {
-				Sensor s = verticesIterator.next();
-				anglePhi = s.getAngle();
-				range = s.getRange();
-			}
-		}
-		if (edgeFactory == null) {
-			edgeFactory = new SensorEdgeFactory();
-		}
-	}
+    public TransmissionGraph(Set<SensorEdge> edges, Set<Sensor> vertices) {
+        this.edges = edges;
+        this.vertices = vertices;
+        this.anglePhi = Sensor.GetAngle();
+        this.range = Sensor.GetRange();
+    }
 
-	public TransmissionGraph(ProximityGraph toCopy) {
-		edges = toCopy.edgeSet();
-		vertices = toCopy.vertexSet();
-		if (!vertices.isEmpty()) {
-			Iterator<Sensor> verticesIterator = vertices.iterator();
-			// This next check should be unnecessary
-			if (verticesIterator.hasNext()) {
-				Sensor s = verticesIterator.next();
-				anglePhi = s.getAngle();
-				range = s.getRange();
-			}
-		}
-		if (edgeFactory == null) {
-			edgeFactory = new SensorEdgeFactory();
-		}
-	}
+    public TransmissionGraph(TransmissionGraph graph) {
+        this(graph.edgeSet(), graph.vertexSet());
+    }
 
 	/**
 	 * Returns a set of all edges connecting source vertex to target vertex if
@@ -100,6 +60,9 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		}
 		return result;
 	}
+    public TransmissionGraph(ProximityGraph graph) {
+        this(graph.edgeSet(), graph.vertexSet());
+    }
 
 	/**
 	 * Returns an edge connecting source vertex to target vertex if such
