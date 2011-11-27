@@ -5,9 +5,11 @@ import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.EdgeFactory;
+import org.jgrapht.Graph;
+import org.jgrapht.UndirectedGraph;
 import org.jgrapht.WeightedGraph;
 import org.jgrapht.alg.*;
-
+import org.jgrapht.traverse.BreadthFirstIterator;
 
 public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 	private final Set<SensorEdge> edges;
@@ -18,10 +20,12 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 	private Double anglePhi;
 	private Double range;
 	private ProximityGraph proxGraph;
-
+	private ProximityGraph minSpanTree;
 
 	public TransmissionGraph(Set<SensorEdge> myEdges, Set<Sensor> myVertices) {
-		edges = myEdges;
+		KruskalMinimumSpanningTree<Sensor, SensorEdge> myMST;
+		// edges = myEdges;
+		edges = new HashSet<SensorEdge>();
 		vertices = myVertices;
 		if (!vertices.isEmpty()) {
 			Iterator<Sensor> verticesIterator = vertices.iterator();
@@ -34,11 +38,17 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		}
 		edgeFactory = new SensorEdgeFactory();
 		proxGraph = new ProximityGraph(myEdges, myVertices);
+		myMST = new KruskalMinimumSpanningTree<Sensor, SensorEdge>(proxGraph);
+		minSpanTree = new ProximityGraph(myMST.getEdgeSet(), myVertices);
+		orientAntennae();
 	}
 
-	// TODO Clean this up. If we use getters or something for angle/range it would be better...
+	// TODO Clean this up. If we use getters or something for angle/range it
+	// would be better...
 	public TransmissionGraph(TransmissionGraph toCopy) {
-		edges = toCopy.edgeSet();
+		KruskalMinimumSpanningTree<Sensor, SensorEdge> myMST;
+		// edges = toCopy.edgeSet();
+		edges = new HashSet<SensorEdge>();
 		vertices = toCopy.vertexSet();
 		if (!vertices.isEmpty()) {
 			Iterator<Sensor> verticesIterator = vertices.iterator();
@@ -51,10 +61,15 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		}
 		edgeFactory = new SensorEdgeFactory();
 		proxGraph = new ProximityGraph(edges, vertices);
+		myMST = new KruskalMinimumSpanningTree<Sensor, SensorEdge>(proxGraph);
+		minSpanTree = new ProximityGraph(myMST.getEdgeSet(), vertices);
+		orientAntennae();
 	}
 
 	public TransmissionGraph(ProximityGraph toCopy) {
-		edges = toCopy.edgeSet();
+		KruskalMinimumSpanningTree<Sensor, SensorEdge> myMST;
+		// edges = toCopy.edgeSet();
+		edges = new HashSet<SensorEdge>();
 		vertices = toCopy.vertexSet();
 		if (!vertices.isEmpty()) {
 			Iterator<Sensor> verticesIterator = vertices.iterator();
@@ -67,6 +82,125 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		}
 		edgeFactory = new SensorEdgeFactory();
 		proxGraph = toCopy;
+		myMST = new KruskalMinimumSpanningTree<Sensor, SensorEdge>(proxGraph);
+		minSpanTree = new ProximityGraph(myMST.getEdgeSet(), vertices);
+		orientAntennae();
+	}
+
+	private void orientAntennae() {
+		Set<SensorEdge> matching = new HashSet<SensorEdge>();
+		// Note that it's possible for a leaf to be in the matching
+		Set<Sensor> leaves = new HashSet<Sensor>();
+		Set<Sensor> verticesAdded = new HashSet<Sensor>();
+		// Grab the first vertex in our set and use it to root the bfs
+		// Make sure we have a vertex to work with
+		if (vertices.iterator().hasNext()) {
+			Sensor startVtx = vertices.iterator().next();
+			BreadthFirstIterator<Sensor, SensorEdge> bfsIt = new BreadthFirstIterator<Sensor, SensorEdge>(
+					minSpanTree, startVtx);
+			if (bfsIt.hasNext()) {
+				Sensor firstCoupled = bfsIt.next();
+				matching.add(minSpanTree.getEdge(startVtx, firstCoupled));
+				verticesAdded.add(startVtx);
+				verticesAdded.add(firstCoupled);
+				// This while loop creates the matching
+				while (bfsIt.hasNext()) {
+					Sensor temp = bfsIt.next();
+					// "if leaf node or edge between it and its parent is in matching M, continue"
+					// Note that if the degree of this vertex is 1 it's a leaf
+					// Also note that if the node is a source/target of an edge
+					// in the matching then the edge between it and its parent
+					// is in M
+					if (minSpanTree.degreeOf(temp) > 1) {
+						// Loop through the matching's edges and check for our
+						// target
+						boolean moveOn = false;
+						/*
+						 * Iterator<SensorEdge> targetIt = matching.iterator();
+						 * while(targetIt.hasNext()){ SensorEdge edgeIt =
+						 * targetIt.next();
+						 * if(edgeIt.getDestination().equals(temp) ||
+						 * edgeIt.getSource().equals(temp)){ moveOn = true; } }
+						 *//* while(targetIt.hasNext()) */
+						Set<SensorEdge> edgesOfTemp = minSpanTree.edgesOf(temp);
+						for (SensorEdge e : edgesOfTemp) {
+							if (matching.contains(e)) {
+								moveOn = true;
+							}
+						}
+						if (!moveOn) {
+							// pick an edge between temp and one of its children
+							// and add to M
+							Iterator<SensorEdge> neighbourIt = edgesOfTemp
+									.iterator();
+							while (!moveOn && neighbourIt.hasNext()) {
+								SensorEdge neighbourEdge = neighbourIt.next();
+								// Note that temp is going to be one of source
+								// or dest
+								Sensor nSource = neighbourEdge.getSource();
+								Sensor nDest = neighbourEdge.getDestination();
+								// This check is so we don't move back up the
+								// tree
+								if (!verticesAdded.contains(nSource)
+										&& !verticesAdded.contains(nDest)) {
+									verticesAdded.add(nSource);
+									verticesAdded.add(nDest);
+									matching.add(neighbourEdge);
+									moveOn = true;
+								}
+							} /* while(!moveOn && neighbourIt.hasNext()) */
+						} /* if(!moveOn) */
+					} else {
+						if (minSpanTree.degreeOf(temp) == 1) {
+							leaves.add(temp);
+						}
+					} /* if(minSpanTree.degreeOf(temp) > 1) */
+				} /* while(bfsIt.hasNext()) */
+				for (Sensor s : leaves) {
+					// Connect it to it's parent. Because it's a leaf, it's
+					// parent is it's neighbour.
+					Set<SensorEdge> edgesOfS = minSpanTree.edgesOf(s);
+					// This should be an unnecessary check because the graph
+					// should be connected
+					if (edgesOfS.iterator().hasNext()) {
+						SensorEdge tempEdge = edgesOfS.iterator().next();
+						if (tempEdge.getSource().equals(s)) {
+							addEdge(s, tempEdge.getDestination());
+							double orientation = angleBetweenTwoSensors(tempEdge.getDestination(), s);
+							s.setOrientation(orientation);
+						} else if (tempEdge.getDestination().equals(s)) {
+							addEdge(s, tempEdge.getSource());
+							double orientation = angleBetweenTwoSensors(tempEdge.getSource(), s);						
+							s.setOrientation(orientation);
+						}
+					}
+				} /* for(Sensor s : leaves) */
+				
+				for(SensorEdge e : matching){
+					addEdge(e.getSource(), e.getDestination());
+					addEdge(e.getDestination(), e.getSource());
+					double angleFromSourceToDest = angleBetweenTwoSensors(e.getDestination(), e.getSource());
+					double angleFromDestToSource = angleBetweenTwoSensors(e.getSource(), e.getDestination());
+					double sourceDestRemainder = Math.PI - angleFromSourceToDest;
+					double destSourceRemainder = Math.PI - angleFromDestToSource;
+					for(Sensor neighbour : vertices){
+						if(e.getSource().getPosition().distance(neighbour.getPosition()) <= range){
+							if(angleBetweenTwoSensors(neighbour, e.getSource()) <= ()){
+								
+							}
+						}
+					} /* for(Sensor neighbour : vertices) */
+					
+				} /* for(SensorEdge e : matching) */
+				
+			} /* if(bfsIt.hasNext()) */
+		} /* if(vertices.iterator().hasNext()) */
+		return;
+	}
+	//TODO atan only returns between -pi/2 and pi/2. Will that be a problem? I think so but how to fix it?
+	private double angleBetweenTwoSensors(Sensor to, Sensor from){
+		return Math.atan((to.getPosition().getY() - from.getPosition().getY()) 
+						/ (to.getPosition().getX() - from.getPosition().getX()));
 	}
 
 	/**
@@ -601,7 +735,7 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 	public int inDegreeOf(Sensor vertex) {
 		int count = 0;
 		// Doesn't say to do this check, but better than not...
-		if(vertex != null){
+		if (vertex != null) {
 			if (containsVertex(vertex)) {
 				Iterator<SensorEdge> edgeIt = edges.iterator();
 				while (edgeIt.hasNext()) {
@@ -611,7 +745,7 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 						++count;
 					}
 				} /* while(vertexIt.hasNext()) */
-			}			
+			}
 		}
 		return count;
 	}
@@ -624,10 +758,11 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 	 * @Returns: a set of all edges incoming into the specified vertex.
 	 */
 	public Set<SensorEdge> incomingEdgesOf(Sensor vertex) {
-		//Doesn't say to return null if it doesn't exist or whatever, so we'll return empty
+		// Doesn't say to return null if it doesn't exist or whatever, so we'll
+		// return empty
 		Set<SensorEdge> result = new HashSet<SensorEdge>();
-		if(vertex != null){
-			if(containsVertex(vertex)){
+		if (vertex != null) {
+			if (containsVertex(vertex)) {
 				Iterator<SensorEdge> edgeIt = edges.iterator();
 				while (edgeIt.hasNext()) {
 					SensorEdge myEdge = edgeIt.next();
@@ -635,7 +770,7 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 					if (myEdge.getDestination().equals(vertex)) {
 						result.add(myEdge);
 					}
-				} /* while(vertexIt.hasNext()) */				
+				} /* while(vertexIt.hasNext()) */
 			}
 		}
 		return result;
@@ -652,7 +787,7 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 	public int outDegreeOf(Sensor vertex) {
 		int count = 0;
 		// Doesn't say to do this check, but better than not...
-		if(vertex != null){
+		if (vertex != null) {
 			if (containsVertex(vertex)) {
 				Iterator<SensorEdge> edgeIt = edges.iterator();
 				while (edgeIt.hasNext()) {
@@ -662,7 +797,7 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 						++count;
 					}
 				} /* while(vertexIt.hasNext()) */
-			}			
+			}
 		}
 		return count;
 	}
@@ -675,10 +810,11 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 	 * @Returns: a set of all edges outgoing from the specified vertex.
 	 */
 	public Set<SensorEdge> outgoingEdgesOf(Sensor vertex) {
-		//Doesn't say to return null if it doesn't exist or whatever, so we'll return empty
+		// Doesn't say to return null if it doesn't exist or whatever, so we'll
+		// return empty
 		Set<SensorEdge> result = new HashSet<SensorEdge>();
-		if(vertex != null){
-			if(containsVertex(vertex)){
+		if (vertex != null) {
+			if (containsVertex(vertex)) {
 				Iterator<SensorEdge> edgeIt = edges.iterator();
 				while (edgeIt.hasNext()) {
 					SensorEdge myEdge = edgeIt.next();
@@ -686,7 +822,7 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 					if (myEdge.getSource().equals(vertex)) {
 						result.add(myEdge);
 					}
-				} /* while(vertexIt.hasNext()) */				
+				} /* while(vertexIt.hasNext()) */
 			}
 		}
 		return result;

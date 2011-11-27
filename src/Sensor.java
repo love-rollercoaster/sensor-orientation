@@ -7,15 +7,17 @@ public class Sensor {
     private Point2D position;
     private final Double  angle;
     private final int id;
+    private Double orientationAngle;
 
     public Sensor(Point2D position) {
-        this(position, 2 * Math.PI);
+        this(position, 2 * Math.PI, 0.0);
     }
 
-    public Sensor(Point2D position, double angle) {
+    public Sensor(Point2D position, double angle, double orientation) {
         this.position = position;
         this.angle = angle;
         this.id = NextId++;
+        orientationAngle = orientation;
     }
 
     public static void SetRange(double range) {
@@ -32,6 +34,15 @@ public class Sensor {
 //TODO: Should this getRange be a static function?
     public double getRange() {
         return range;
+    }
+    
+    public double getOrientation(){
+    	return orientationAngle;
+    }
+    
+    public void setOrientation(double orientation){
+    	orientationAngle = orientation;
+    	return;
     }
 
     public void setPosition(Point2D position) {
