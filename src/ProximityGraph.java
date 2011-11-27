@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.WeightedGraph;
 
 public class ProximityGraph implements UndirectedGraph<Sensor, SensorEdge> {
 	private final Set<SensorEdge> edges;
@@ -408,54 +409,148 @@ public class ProximityGraph implements UndirectedGraph<Sensor, SensorEdge> {
 	 */
 	public SensorEdge removeEdge(Sensor sourceVertex, Sensor targetVertex) {
 		SensorEdge result = null;
-		if((sourceVertex != null) && (targetVertex != null)){
+		if ((sourceVertex != null) && (targetVertex != null)) {
 			result = getEdge(sourceVertex, targetVertex);
-			if(result != null){
+			if (result != null) {
 				removeEdge(result);
-			}			
+			}
 		}
 		return result;
 	}
 
-	@Override
+	/**
+	 * Removes the specified edge from the graph. Removes the specified edge
+	 * from this graph if it is present. More formally, removes an edge e2 such
+	 * that e2.equals(e), if the graph contains such edge. Returns true if the
+	 * graph contained the specified edge. (The graph will not contain the
+	 * specified edge once the call returns).
+	 * 
+	 * If the specified edge is null returns false.
+	 * 
+	 * @Parameters: e - edge to be removed from this graph, if present.
+	 * @Returns: true if and only if the graph contained the specified edge.
+	 */
 	public boolean removeEdge(SensorEdge e) {
-		// TODO Auto-generated method stub
-		return false;
+		boolean result = false;
+		if (e != null) {
+			// This check is probably unnecessary because the remove function
+			// does it for us, but better to do it.
+			if (edges.contains(e)) {
+				// This should set it to true
+				result = edges.remove(e);
+			}
+		}
+		return result;
 	}
 
-	@Override
+	/**
+	 * Removes the specified vertex from this graph including all its touching
+	 * edges if present. More formally, if the graph contains a vertex u such
+	 * that u.equals(v), the call removes all edges that touch u and then
+	 * removes u itself. If no such u is found, the call leaves the graph
+	 * unchanged. Returns true if the graph contained the specified vertex. (The
+	 * graph will not contain the specified vertex once the call returns).
+	 * 
+	 * If the specified vertex is null returns false.
+	 * 
+	 * @Parameters: v - vertex to be removed from this graph, if present.
+	 * @Returns: true if the graph contained the specified vertex; false
+	 *           otherwise.
+	 */
 	public boolean removeVertex(Sensor v) {
-		// TODO Auto-generated method stub
-		return false;
+		boolean result = false;
+		if (v != null) {
+			if (containsVertex(v)) {
+				Iterator<SensorEdge> edgeIt = edges.iterator();
+				while (edgeIt.hasNext()) {
+					SensorEdge myEdge = edgeIt.next();
+					if (myEdge.getSource().equals(v)
+							|| myEdge.getDestination().equals(v)) {
+						removeEdge(myEdge);
+					}
+				} /* while(vertexIt.hasNext()) */
+				result = vertices.remove(v);
+			}
+		}
+		return result;
 	}
 
-	@Override
+	/**
+	 * Returns a set of the vertices contained in this graph. The set is backed
+	 * by the graph, so changes to the graph are reflected in the set. If the
+	 * graph is modified while an iteration over the set is in progress, the
+	 * results of the iteration are undefined.
+	 * 
+	 * The graph implementation may maintain a particular set ordering (e.g. via
+	 * LinkedHashSet) for deterministic iteration, but this is not required. It
+	 * is the responsibility of callers who rely on this behavior to only use
+	 * graph implementations which support it.
+	 * 
+	 * @Returns: a set view of the vertices contained in this graph.
+	 */
 	public Set<Sensor> vertexSet() {
-		// TODO Auto-generated method stub
-		return null;
+		// FIXME I'm not sure what it means to be backed by the set. I'm just
+		// going to return 'vertices'...
+		return vertices;
 	}
 
-	@Override
+	/**
+	 * Returns the source vertex of an edge. For an undirected graph, source and
+	 * target are distinguishable designations (but without any mathematical
+	 * meaning).
+	 * 
+	 * @Parameters: e - edge of interest
+	 * @Returns: source vertex
+	 */
 	public Sensor getEdgeSource(SensorEdge e) {
-		// TODO Auto-generated method stub
-		return null;
+		return e.getSource();
 	}
 
-	@Override
+	/**
+	 * Returns the target vertex of an edge. For an undirected graph, source and
+	 * target are distinguishable designations (but without any mathematical
+	 * meaning).
+	 * 
+	 * @Parameters: e - edge of interest
+	 * @Returns: target vertex
+	 */
 	public Sensor getEdgeTarget(SensorEdge e) {
-		// TODO Auto-generated method stub
-		return null;
+		return e.getDestination();
 	}
 
-	@Override
+	/**
+	 * Returns the weight assigned to a given edge. Unweighted graphs return 1.0
+	 * (as defined by WeightedGraph.DEFAULT_EDGE_WEIGHT), allowing
+	 * weighted-graph algorithms to apply to them where meaningful.
+	 * 
+	 * @Parameters: e - edge of interest
+	 * @Returns: edge weight
+	 * @See Also: WeightedGraph
+	 */
 	public double getEdgeWeight(SensorEdge e) {
-		// TODO Auto-generated method stub
-		return 0;
+		return WeightedGraph.DEFAULT_EDGE_WEIGHT;
 	}
 
-	@Override
+	/**
+	 * Returns the degree of the specified vertex. A degree of a vertex in an
+	 * undirected graph is the number of edges touching that vertex.
+	 * 
+	 * @Parameters: vertex - vertex whose degree is to be calculated.
+	 * @Returns: the degree of the specified vertex.
+	 */
 	public int degreeOf(Sensor vertex) {
-		// TODO Auto-generated method stub
-		return 0;
+		int count = 0;
+		//Doesn't say to do this check, but better than not...
+		if(containsVertex(vertex)){
+			Iterator<SensorEdge> edgeIt = edges.iterator();
+			while (edgeIt.hasNext()) {
+				SensorEdge myEdge = edgeIt.next();
+				if (myEdge.getSource().equals(vertex)
+						|| myEdge.getDestination().equals(vertex)) {
+					++count;
+				}
+			} /* while(vertexIt.hasNext()) */		
+		}
+		return count;
 	}
 }
