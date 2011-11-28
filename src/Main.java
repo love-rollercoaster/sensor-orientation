@@ -21,8 +21,11 @@ import org.jgraph.JGraph;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
+import org.jgraph.graph.GraphModel;
+import org.jgrapht.Graph;
 import org.jgrapht.demo.JGraphAdapterDemo;
 import org.jgrapht.ext.JGraphModelAdapter;
+import org.jgrapht.graph.SimpleDirectedGraph;
 
 // FIXME: Lots of side effects
 public class Main extends JApplet {
@@ -30,10 +33,9 @@ public class Main extends JApplet {
     private static final Dimension DEFAULT_SIZE = new Dimension(530, 320);
     private static int sensorRange = 100;
 
-    private JGraph jgraph = null;
-    private Set<Sensor> sensors = new HashSet<Sensor>();
-    private JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter = null;
-    private MouseAdapter mouseAdapter = null;
+    private JGraph jgraph;
+    private Set<Sensor> vertices;
+    private MouseAdapter mouseAdapter;
 
     public static void main(String[] args) {
         JGraphAdapterDemo applet = new JGraphAdapterDemo();
@@ -43,76 +45,66 @@ public class Main extends JApplet {
         initFrame(applet);
     }
 
+    @Override
     public void init() {
+        super.init();
+
+        Sensor.SetRange(sensorRange); // FIXME
+
         setupButtons();
-
-        initSensors();
         initMouseAdapter();
-        initJGraphT();
-        initJGraph();
 
-        positionSensorsOnJGraph();
+        show(createTestDirectedGraph());
 
         resize(DEFAULT_SIZE);
     }
 
-    private void initMouseAdapter() {
-        mouseAdapter = new MouseAdapter() {
-            public void mouseReleased(MouseEvent event) {
-                Object[] cells = jgraph.getSelectionCells().clone();
-                if (cells == null)
-                    return;
 
-                for (Object cellObject : cells) {
-                    DefaultGraphCell cell = (DefaultGraphCell) cellObject;
-                    updateSensorPositionFromCell(cell);
-                }
 
-                recomputeJGraphT();
-                repaint();
-            }
-        };
-    }
-
+    @Override
     public void paint(Graphics g) {
         super.paint(g);
 
         Graphics jgraphGraphics = jgraph.getGraphics();
 
-        for (Sensor sensor : sensors) {
+        for (Sensor sensor : vertices) {
             SensorDrawingUtils.PaintSensorRange(jgraphGraphics, sensor);
         }
     }
 
-    private void initSensors() {
-        Sensor.SetRange(sensorRange);
-        sensors = new HashSet<Sensor>();
-        sensors.add(new Sensor(new Point2D.Double(130, 40)));
-        sensors.add(new Sensor(new Point2D.Double(130, 100)));
-        sensors.add(new Sensor(new Point2D.Double(190, 100)));
+    public void show(Graph<Sensor, SensorEdge> jgrapht) {
+        vertices = jgrapht.vertexSet();
+        JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter = (new JGraphConverter()).convertFromJGraphT(jgrapht);
+        resetJGraph(jgraphAdapter, vertices);
     }
 
-    private void initJGraphT() {
-    	ProximityGraph proximityGraph = new ProximityGraph(sensors);
-    	jgraphAdapter = (new JGraphConverter()).convertProximityGraphToJGraph(proximityGraph);
+    private void resetJGraph(JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter, Set<Sensor> vertices) {
+        if (jgraph != null) {
+            remove(jgraph);
+        }
+
+        jgraph = createJGraph(jgraphAdapter);
+        add(jgraph);
+        positionSensorsOnJGraph(jgraphAdapter, vertices);
+        repaint();
     }
 
-    private void recomputeJGraphT() {
-        this.remove(jgraph);
-        initJGraphT();
-        initJGraph();
-        positionSensorsOnJGraph();
-    }
-
-    private void initJGraph() {
-        jgraph = new JGraph(jgraphAdapter);
+    private JGraph createJGraph(GraphModel model) {
+        JGraph jgraph = new JGraph(model);
         jgraph.addMouseListener(mouseAdapter);
-        adjustDisplaySettings(jgraph);
-        this.getContentPane().add(jgraph);
+        jgraph.setPreferredSize(DEFAULT_SIZE);
+        jgraph.setBackground(ColorTheme.Black);
+        jgraph.setDragEnabled(false);
+        jgraph.setAntiAliased(true);
+        jgraph.setDropEnabled(false);
+        jgraph.setEditable(false);
+        jgraph.setMoveBeyondGraphBounds(false);
+
+        return jgraph;
     }
 
-    private void updateSensorPositionFromCell(DefaultGraphCell cell) {
-        Sensor sensor = (Sensor) jgraphAdapter.getValue(cell);
+    private void updateSensorPositionFromCell(GraphModel model, DefaultGraphCell cell) {
+        Sensor sensor = (Sensor) model.getValue(cell);
 
         AttributeMap cellAttributes = cell.getAttributes();
         Rectangle2D cellBounds = GraphConstants.getBounds(cellAttributes);
@@ -121,22 +113,39 @@ public class Main extends JApplet {
         sensor.setPosition(cellBounds.getCenterX()+offset, cellBounds.getCenterY()+offset);
     }
 
-    private void positionSensorsOnJGraph() {
+    private void positionSensorsOnJGraph(JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter, Set<Sensor> sensors) {
         for (Sensor sensor : sensors) {
             positionSensorOnJgraph(jgraphAdapter, sensor);
         }
     }
 
+    private void initMouseAdapter() {
+        mouseAdapter = new MouseAdapter() {
+            public void mouseReleased(MouseEvent event) {
+                Object[] cells = jgraph.getSelectionCells().clone();
+
+                if (cells == null)
+                    return;
+
+                for (Object cellObject : cells) {
+                    updateSensorPositionFromCell(jgraph.getModel(), (DefaultGraphCell) cellObject);
+                }
+
+                // FIXME
+                show(new ProximityGraph(vertices));
+            }
+        };
+    }
+
     @SuppressWarnings("unchecked")
     private void positionSensorOnJgraph(JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter, Sensor sensor) {
-        DefaultGraphCell cell = jgraphAdapter.getVertexCell(sensor);
+        DefaultGraphCell cell = jgraphAdapter.getVertexCell((Object)sensor);
 
         AttributeMap cellAttributes = cell.getAttributes();
         GraphConstants.setBounds(cellAttributes, SensorDrawingUtils.GetBoundsFromSensor(sensor));
 
         AttributeMap cellAttr = new AttributeMap();
         cellAttr.put(cell, cellAttributes);
-
         jgraphAdapter.edit(cellAttr, null, null, null);
     }
 
@@ -145,19 +154,20 @@ public class Main extends JApplet {
         c.setBackground(ColorTheme.Black);
         c.setLayout(new FlowLayout());
         JButton omniButton = makeButton(" Show Omnidirectional Graph ");
-        //http://people.scs.carleton.ca/~lanthier/teaching/COMP1406/Notes/COMP1406_Ch4_GraphicalUserInterfaces.pdf
-        //pg 31/38 starts talking about listeners
+
         omniButton.addActionListener(new ActionListener(){
-        	public void actionPerformed(ActionEvent e){
-        		//TODO: Display the omni-graph
-        	}
-        });      
+            public void actionPerformed(ActionEvent e){
+                //TODO: Display the omni-graph
+            }
+        });
+
         JButton directedButton = makeButton(" Show Directed Antennae Graph ");
         directedButton.addActionListener(new ActionListener(){
-        	public void actionPerformed(ActionEvent e){
-        		//TODO: Display the directed-graph
-        	}
-        });          
+            public void actionPerformed(ActionEvent e){
+                //TODO: Display the directed-graph
+            }
+        });
+
         c.add(omniButton);
         c.add(directedButton);
     }
@@ -182,14 +192,27 @@ public class Main extends JApplet {
         frame.setBackground(ColorTheme.Black);
     }
 
-    private void adjustDisplaySettings(JGraph jgraph) {
-        jgraph.setPreferredSize(DEFAULT_SIZE);
-        jgraph.setBackground(ColorTheme.Black);
-        jgraph.setDragEnabled(false);
-        jgraph.setAntiAliased(true);
-        jgraph.setDropEnabled(false);
-        jgraph.setEditable(false);
-        jgraph.setMoveBeyondGraphBounds(false);
+    private ProximityGraph createTestProximityGraph() {
+        Set<Sensor> sensors = new HashSet<Sensor>();
+        sensors.add(new Sensor(new Point2D.Double(130, 40)));
+        sensors.add(new Sensor(new Point2D.Double(130, 100)));
+        sensors.add(new Sensor(new Point2D.Double(190, 100)));
 
+        return new ProximityGraph(sensors);
+    }
+
+    private SimpleDirectedGraph<Sensor, SensorEdge> createTestDirectedGraph() {
+        Sensor a = new Sensor(new Point2D.Double(130, 40));
+        Sensor b = new Sensor(new Point2D.Double(130, 100));
+        Sensor c = new Sensor(new Point2D.Double(190, 100));
+
+        SimpleDirectedGraph<Sensor, SensorEdge> graph = new SimpleDirectedGraph<Sensor, SensorEdge>(new SensorEdgeFactory());
+        graph.addVertex(a);
+        graph.addVertex(b);
+        graph.addVertex(c);
+        graph.addEdge(a, b);
+        graph.addEdge(c, b);
+
+        return graph;
     }
 }
