@@ -88,7 +88,6 @@ public class Main extends JApplet {
         jgraph = createJGraph(jgraphAdapter);
         add(jgraph);
         positionSensorsOnJGraph(jgraphAdapter, vertices);
-        repaint();
     }
 
     private JGraph createJGraph(GraphModel model) {
@@ -123,6 +122,8 @@ public class Main extends JApplet {
 
     private void initMouseAdapter() {
         mouseAdapter = new MouseAdapter() {
+
+            @Override
             public void mouseReleased(MouseEvent event) {
                 Object[] cells = jgraph.getSelectionCells().clone();
 
@@ -133,8 +134,13 @@ public class Main extends JApplet {
                     updateSensorPositionFromCell(jgraph.getModel(), (DefaultGraphCell) cellObject);
                 }
 
-                // FIXME
                 show(jgraphtFactory, jgraphtFactory.createGraph(vertices));
+                repaint();
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent event) {
+
             }
         };
     }
@@ -199,18 +205,15 @@ public class Main extends JApplet {
         sensors.add(new Sensor(new Point2D.Double(130, 40)));
         sensors.add(new Sensor(new Point2D.Double(130, 100)));
         sensors.add(new Sensor(new Point2D.Double(190, 100)));
-        sensors.add(new Sensor(new Point2D.Double(130, 40)));
-        sensors.add(new Sensor(new Point2D.Double(130, 100)));
-        sensors.add(new Sensor(new Point2D.Double(190, 100)));
-        sensors.add(new Sensor(new Point2D.Double(10, 10)));
-        sensors.add(new Sensor(new Point2D.Double(19, 10)));
-        sensors.add(new Sensor(new Point2D.Double(57, 63)));
-        sensors.add(new Sensor(new Point2D.Double(94, 88)));
-        sensors.add(new Sensor(new Point2D.Double(105, 77)));
-        sensors.add(new Sensor(new Point2D.Double(65, 66)));
-        sensors.add(new Sensor(new Point2D.Double(83, 23)));
-        sensors.add(new Sensor(new Point2D.Double(49, 101)));
-        sensors.add(new Sensor(new Point2D.Double(73, 71)));
+//        sensors.add(new Sensor(new Point2D.Double(10, 10)));
+//        sensors.add(new Sensor(new Point2D.Double(19, 10)));
+//        sensors.add(new Sensor(new Point2D.Double(57, 63)));
+        sensors.add(new Sensor(new Point2D.Double(494, 188)));
+        sensors.add(new Sensor(new Point2D.Double(105, 347)));
+        sensors.add(new Sensor(new Point2D.Double(265, 656)));
+        sensors.add(new Sensor(new Point2D.Double(283, 243)));
+        sensors.add(new Sensor(new Point2D.Double(249, 301)));
+        sensors.add(new Sensor(new Point2D.Double(373, 571)));
 
         return sensors;
     }
