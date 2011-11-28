@@ -37,6 +37,9 @@ public class Main extends JApplet {
     private Set<Sensor> vertices;
     private MouseAdapter mouseAdapter;
 
+    private JGraphFactory guiView;
+
+
     public static void main(String[] args) {
         JGraphAdapterDemo applet = new JGraphAdapterDemo();
         applet.init();
@@ -48,18 +51,15 @@ public class Main extends JApplet {
     @Override
     public void init() {
         super.init();
-
         Sensor.SetRange(sensorRange); // FIXME
 
         setupButtons();
         initMouseAdapter();
 
-        show(createTestDirectedGraph());
+        show(new TransmissionGraphGUIView(), createTestDirectedGraph());
 
         resize(DEFAULT_SIZE);
     }
-
-
 
     @Override
     public void paint(Graphics g) {
@@ -72,7 +72,7 @@ public class Main extends JApplet {
         }
     }
 
-    public void show(Graph<Sensor, SensorEdge> jgrapht) {
+    public void show(JGraphFactory guiView, Graph<Sensor, SensorEdge> jgrapht) {
         vertices = jgrapht.vertexSet();
         JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter = (new JGraphConverter()).convertFromJGraphT(jgrapht);
         resetJGraph(jgraphAdapter, vertices);
@@ -132,7 +132,7 @@ public class Main extends JApplet {
                 }
 
                 // FIXME
-                show(new ProximityGraph(vertices));
+                show(guiView.createGraph(vertices));
             }
         };
     }
