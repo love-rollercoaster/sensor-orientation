@@ -17,7 +17,6 @@ public class Sensor {
         return Angle;
     }
 
-
     public static void SetRange(double range) {
         Sensor.Range = range;
     }

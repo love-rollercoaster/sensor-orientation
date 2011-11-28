@@ -22,7 +22,6 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 
 	public TransmissionGraph(Set<SensorEdge> myEdges, Set<Sensor> myVertices) {
 		KruskalMinimumSpanningTree<Sensor, SensorEdge> myMST;
-		// edges = myEdges;
 		edges = new HashSet<SensorEdge>();
 		vertices = myVertices;
 		if (!vertices.isEmpty()) {
@@ -30,8 +29,8 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 			// This next check should be unnecessary
 			if (verticesIterator.hasNext()) {
 				Sensor s = verticesIterator.next();
-				anglePhi = s.getAngle();
-				range = s.getRange();
+				anglePhi = Sensor.GetAngle();
+				range = Sensor.GetRange();
 			}
 		}
 		edgeFactory = new SensorEdgeFactory();
@@ -45,7 +44,6 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 	// would be better...
 	public TransmissionGraph(TransmissionGraph toCopy) {
 		KruskalMinimumSpanningTree<Sensor, SensorEdge> myMST;
-		// edges = toCopy.edgeSet();
 		edges = new HashSet<SensorEdge>();
 		vertices = toCopy.vertexSet();
 		if (!vertices.isEmpty()) {
@@ -53,8 +51,8 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 			// This next check should be unnecessary
 			if (verticesIterator.hasNext()) {
 				Sensor s = verticesIterator.next();
-				anglePhi = s.getAngle();
-				range = s.getRange();
+				anglePhi = Sensor.GetAngle();
+				range = Sensor.GetRange();
 			}
 		}
 		edgeFactory = new SensorEdgeFactory();
@@ -66,7 +64,6 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 
 	public TransmissionGraph(ProximityGraph toCopy) {
 		KruskalMinimumSpanningTree<Sensor, SensorEdge> myMST;
-		// edges = toCopy.edgeSet();
 		edges = new HashSet<SensorEdge>();
 		vertices = toCopy.vertexSet();
 		if (!vertices.isEmpty()) {
@@ -74,8 +71,8 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 			// This next check should be unnecessary
 			if (verticesIterator.hasNext()) {
 				Sensor s = verticesIterator.next();
-				anglePhi = s.getAngle();
-				range = s.getRange();
+				anglePhi = Sensor.GetAngle();
+				range = Sensor.GetRange();
 			}
 		}
 		edgeFactory = new SensorEdgeFactory();
@@ -113,13 +110,6 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 						// Loop through the matching's edges and check for our
 						// target
 						boolean moveOn = false;
-						/*
-						 * Iterator<SensorEdge> targetIt = matching.iterator();
-						 * while(targetIt.hasNext()){ SensorEdge edgeIt =
-						 * targetIt.next();
-						 * if(edgeIt.getDestination().equals(temp) ||
-						 * edgeIt.getSource().equals(temp)){ moveOn = true; } }
-						 *//* while(targetIt.hasNext()) */
 						Set<SensorEdge> edgesOfTemp = minSpanTree.edgesOf(temp);
 						for (SensorEdge e : edgesOfTemp) {
 							if (matching.contains(e)) {
@@ -129,8 +119,7 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 						if (!moveOn) {
 							// pick an edge between temp and one of its children
 							// and add to M
-							Iterator<SensorEdge> neighbourIt = edgesOfTemp
-									.iterator();
+							Iterator<SensorEdge> neighbourIt = edgesOfTemp.iterator();
 							while (!moveOn && neighbourIt.hasNext()) {
 								SensorEdge neighbourEdge = neighbourIt.next();
 								// Note that temp is going to be one of source
@@ -181,8 +170,6 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 					addEdge(destination, source);
 					double angleFromSourceToDest = angleBetweenTwoSensors(destination, source);
 					double angleFromDestToSource = angleBetweenTwoSensors(source, destination);
-//					double sourceDestRemainder = Math.PI - angleFromSourceToDest;
-//					double destSourceRemainder = Math.PI - angleFromDestToSource;
 					//Orient them so that they see each other at the edge of their vision
 					source.setOrientation(angleFromSourceToDest + (anglePhi/2));
 					destination.setOrientation(angleFromDestToSource + (anglePhi/2));
