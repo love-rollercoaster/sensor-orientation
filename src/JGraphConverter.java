@@ -11,10 +11,17 @@ import org.jgrapht.ext.JGraphModelAdapter;
 public class JGraphConverter {
 
     public JGraphModelAdapter<Sensor, SensorEdge> convertProximityGraphToJGraph(ProximityGraph proximityGraph) {
-        AttributeMap vertexAttributes = createDefaultVertexAttributes();
+        AttributeMap vertexAttributes = createDefaultVertexAttributes(false);
         AttributeMap edgeAttributes = createDefaultEdgeAttributes(false);
 
         return new JGraphModelAdapter<Sensor, SensorEdge>(proximityGraph, vertexAttributes, edgeAttributes);
+    }
+    
+    public JGraphModelAdapter<Sensor, SensorEdge> convertTransGraphToJGraph(TransmissionGraph transGraph) {
+        AttributeMap vertexAttributes = createDefaultVertexAttributes(true);
+        AttributeMap edgeAttributes = createDefaultEdgeAttributes(true);
+
+        return new JGraphModelAdapter<Sensor, SensorEdge>(transGraph, vertexAttributes, edgeAttributes);
     }
 
     private AttributeMap createDefaultEdgeAttributes(boolean directedGraph) {
@@ -38,9 +45,13 @@ public class JGraphConverter {
         return map;
     }
 
-    private AttributeMap createDefaultVertexAttributes() {
+    private AttributeMap createDefaultVertexAttributes(boolean directedGraph) {
         AttributeMap map = new AttributeMap();
 
+        if(directedGraph){
+        	//TODO: Try to get an arc drawn that radiates angle/2 on either side of orientation angle of each sensor in graph
+        }
+        
         GraphConstants.setForeground(map, ColorTheme.Black);
         GraphConstants.setLineColor(map, ColorTheme.White);
         GraphConstants.setBackground(map, ColorTheme.White);

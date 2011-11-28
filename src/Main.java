@@ -3,6 +3,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -91,9 +93,7 @@ public class Main extends JApplet {
     }
 
     private void initJGraphT() {
-        //ProximityGraph proximityGraph = (new GraphFactory()).makeProximityGraphFromSensors(sensors);
     	ProximityGraph proximityGraph = new ProximityGraph(sensors);
-        //jgraphAdapter = (new JGraphConverter()).convertProximityGraphToJGraph(proximityGraph);
     	jgraphAdapter = (new JGraphConverter()).convertProximityGraphToJGraph(proximityGraph);
     }
 
@@ -144,8 +144,22 @@ public class Main extends JApplet {
         Container c = getContentPane();
         c.setBackground(ColorTheme.Black);
         c.setLayout(new FlowLayout());
-        c.add(makeButton(" Show Proximity Graph "));
-        c.add(makeButton(" Show MST "));
+        JButton omniButton = makeButton(" Show Omnidirectional Graph ");
+        //http://people.scs.carleton.ca/~lanthier/teaching/COMP1406/Notes/COMP1406_Ch4_GraphicalUserInterfaces.pdf
+        //pg 31/38 starts talking about listeners
+        omniButton.addActionListener(new ActionListener(){
+        	public void actionPerformed(ActionEvent e){
+        		//TODO: Display the omni-graph
+        	}
+        });      
+        JButton directedButton = makeButton(" Show Directed Antennae Graph ");
+        directedButton.addActionListener(new ActionListener(){
+        	public void actionPerformed(ActionEvent e){
+        		//TODO: Display the directed-graph
+        	}
+        });          
+        c.add(omniButton);
+        c.add(directedButton);
     }
 
     private JButton makeButton(String label) {
