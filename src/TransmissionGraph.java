@@ -1,6 +1,7 @@
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
@@ -40,9 +41,18 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		}
 		orientAntennae();
 		connectivityInsp = new StrongConnectivityInspector<Sensor, SensorEdge>(this);
-		//assert(connectivityInsp.isStronglyConnected() == true);
-		if(connectivityInsp.isStronglyConnected()){
-			System.out.println("Graph is strongly connected.");
+		if(!connectivityInsp.isStronglyConnected()){
+			System.out.println("Not strongly connected.");
+			List<Set<Sensor>> mySets = connectivityInsp.stronglyConnectedSets();
+			int count = 1;
+			for(Set<Sensor> set : mySets){
+				System.out.println("Set #: " + count++);				
+				for(Sensor s : set){
+					System.out.println(s);
+				}
+			}
+		} else {
+			System.out.println("Seems to work!");
 		}
 	}
 
@@ -67,9 +77,18 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		}		
 		orientAntennae();
 		connectivityInsp = new StrongConnectivityInspector<Sensor, SensorEdge>(this);
-		//assert(connectivityInsp.isStronglyConnected() == true);	
-		if(connectivityInsp.isStronglyConnected()){
-			System.out.println("Graph is strongly connected.");
+		if(!connectivityInsp.isStronglyConnected()){
+			System.out.println("Not strongly connected.");
+			List<Set<Sensor>> mySets = connectivityInsp.stronglyConnectedSets();
+			int count = 1;
+			for(Set<Sensor> set : mySets){
+				System.out.println("Set #: " + count++);				
+				for(Sensor s : set){
+					System.out.println(s);
+				}
+			}
+		} else {
+			System.out.println("Seems to work!");
 		}
 	}
 
@@ -91,10 +110,19 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		}				
 		orientAntennae();
 		connectivityInsp = new StrongConnectivityInspector<Sensor, SensorEdge>(this);
-		//assert(connectivityInsp.isStronglyConnected() == true);
-		if(connectivityInsp.isStronglyConnected()){
-			System.out.println("Graph is strongly connected.");
-		}		
+		if(!connectivityInsp.isStronglyConnected()){
+			System.out.println("Not strongly connected.");
+			List<Set<Sensor>> mySets = connectivityInsp.stronglyConnectedSets();
+			int count = 1;
+			for(Set<Sensor> set : mySets){
+				System.out.println("Set #: " + count++);				
+				for(Sensor s : set){
+					System.out.println(s);
+				}
+			}
+		} else {
+			System.out.println("Seems to work!");
+		}	
 	}
 
 	private void orientAntennae() {
@@ -108,8 +136,12 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 			Sensor startVtx = vertices.iterator().next();
 			BreadthFirstIterator<Sensor, SensorEdge> bfsIt = new BreadthFirstIterator<Sensor, SensorEdge>(
 					minSpanTree, startVtx);
+			Sensor firstCoupled;
+			if(bfsIt.hasNext()){
+				firstCoupled = bfsIt.next(); //This first call apparently gets the startVtx
+			}
 			if (bfsIt.hasNext()) {
-				Sensor firstCoupled = bfsIt.next();
+				firstCoupled = bfsIt.next();
 				matching.add(minSpanTree.getEdge(startVtx, firstCoupled));
 				verticesAdded.add(startVtx);
 				verticesAdded.add(firstCoupled);
@@ -125,16 +157,26 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 						// Loop through the matching's edges and check for our
 						// target
 						boolean moveOn = false;
+						/*
+						 * Iterator<SensorEdge> targetIt = matching.iterator();
+						 * while(targetIt.hasNext()){ SensorEdge edgeIt =
+						 * targetIt.next();
+						 * if(edgeIt.getDestination().equals(temp) ||
+						 * edgeIt.getSource().equals(temp)){ moveOn = true; } }
+						 *//* while(targetIt.hasNext()) */
 						Set<SensorEdge> edgesOfTemp = minSpanTree.edgesOf(temp);
 						for (SensorEdge e : edgesOfTemp) {
-							if (matching.contains(e)) {
-								moveOn = true;
+							if(e != null){
+								if (matching.contains(e)) {
+									moveOn = true;
+								}								
 							}
 						}
 						if (!moveOn) {
 							// pick an edge between temp and one of its children
 							// and add to M
-							Iterator<SensorEdge> neighbourIt = edgesOfTemp.iterator();
+							Iterator<SensorEdge> neighbourIt = edgesOfTemp
+									.iterator();
 							while (!moveOn && neighbourIt.hasNext()) {
 								SensorEdge neighbourEdge = neighbourIt.next();
 								// Note that temp is going to be one of source
@@ -154,117 +196,127 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 						} /* if(!moveOn) */
 					} else {
 						if (minSpanTree.degreeOf(temp) == 1) {
-							leaves.add(temp);
+							if(!verticesAdded.contains(temp)){
+								leaves.add(temp);
+							}							
 						}
 					} /* if(minSpanTree.degreeOf(temp) > 1) */
 				} /* while(bfsIt.hasNext()) */
 				for (Sensor s : leaves) {
-					// Connect it to it's parent. Because it's a leaf, it's
-					// parent is it's neighbour.
-					Set<SensorEdge> edgesOfS = minSpanTree.edgesOf(s);
-					// This should be an unnecessary check because the graph
-					// should be connected
-					if (edgesOfS.iterator().hasNext()) {
-						SensorEdge tempEdge = edgesOfS.iterator().next();
-						if (tempEdge.getSource().equals(s)) {
-							addEdge(s, tempEdge.getDestination());
-							double orientation = angleBetweenTwoSensors(tempEdge.getDestination(), s);
-							s.setOrientation(orientation);
-						} else if (tempEdge.getDestination().equals(s)) {
-							addEdge(s, tempEdge.getSource());
-							double orientation = angleBetweenTwoSensors(tempEdge.getSource(), s);						
-							s.setOrientation(orientation);
+					if(s != null){
+						// Connect it to it's parent. Because it's a leaf, it's
+						// parent is it's neighbour.
+						Set<SensorEdge> edgesOfS = minSpanTree.edgesOf(s);
+						// This should be an unnecessary check because the graph
+						// should be connected
+						if (edgesOfS.iterator().hasNext()) {
+							SensorEdge tempEdge = edgesOfS.iterator().next();
+							if (tempEdge.getSource().equals(s)) {
+								addEdge(s, tempEdge.getDestination());
+								double orientation = angleBetweenTwoSensors(tempEdge.getDestination(), s);
+								s.setOrientation(orientation);
+							} else if (tempEdge.getDestination().equals(s)) {
+								addEdge(s, tempEdge.getSource());
+								double orientation = angleBetweenTwoSensors(tempEdge.getSource(), s);						
+								s.setOrientation(orientation);
+							}
 						}
 					}
 				} /* for(Sensor s : leaves) */
 				
 				for(SensorEdge e : matching){
-					Sensor source = e.getSource();
-					Sensor destination = e.getDestination();
-					addEdge(source, destination);
-					addEdge(destination, source);
-					double angleFromSourceToDest = angleBetweenTwoSensors(destination, source);
-					double angleFromDestToSource = angleBetweenTwoSensors(source, destination);
-					//Orient them so that they see each other at the edge of their vision
-					source.setOrientation(angleFromSourceToDest + (anglePhi/2));
-					destination.setOrientation(angleFromDestToSource + (anglePhi/2));
-					//FIXME: This algorithm orients, then considers neighbours. It would be nice if we could consider neighbours
-					//and then orient.
-					for(Sensor neighbour : vertices){
-						if(!neighbour.equals(source) && !neighbour.equals(destination)){
-							if(source.getPosition().distance(neighbour.getPosition()) <= range){
-								double sourceNeighbourAngle = angleBetweenTwoSensors(neighbour, source);
-								double sourceOrient = source.getOrientation();
-								//If adding and subtracting the angles doesn't overlap the origin
-								if(((sourceOrient + (anglePhi/2)) <= (2*Math.PI)) && ((sourceOrient - (anglePhi/2)) >= 0)){
-									if((sourceNeighbourAngle <= (sourceOrient + (anglePhi/2)))
-										&& (sourceNeighbourAngle >= (sourceOrient - (anglePhi/2)))){
-										//Add the edge between them
-										addEdge(source, neighbour);
-									}									
-								} else {
-									if((sourceOrient + (anglePhi/2)) > (2*Math.PI)){
-										if((sourceOrient - (anglePhi/2)) < 0){
-											//Unlikely situation. In any case, the sweep is more than 2*PI so just accept it.
-											addEdge(source, neighbour);
-										} else {
-											if(((sourceNeighbourAngle >= (sourceOrient - (anglePhi/2))) 
-													&& (sourceNeighbourAngle <= (2*Math.PI)))
-												|| ((sourceNeighbourAngle >= 0)
-												    && (sourceNeighbourAngle <= ((sourceOrient + (anglePhi/2)) - (2*Math.PI))))){
+					if(e != null){
+						Sensor source = e.getSource();
+						Sensor destination = e.getDestination();
+						addEdge(source, destination);
+						addEdge(destination, source);
+						double angleFromSourceToDest = angleBetweenTwoSensors(destination, source);
+						double angleFromDestToSource = angleBetweenTwoSensors(source, destination);
+	//					double sourceDestRemainder = Math.PI - angleFromSourceToDest;
+	//					double destSourceRemainder = Math.PI - angleFromDestToSource;
+						//Orient them so that they see each other at the edge of their vision
+						source.setOrientation(angleFromSourceToDest + (anglePhi/2));
+						destination.setOrientation(angleFromDestToSource + (anglePhi/2));
+						//FIXME: This algorithm orients, then considers neighbours. It would be nice if we could consider neighbours
+						//and then orient.
+						for(Sensor neighbour : vertices){
+							if(neighbour != null){
+								if(!neighbour.equals(source) && !neighbour.equals(destination)){
+									if(source.getPosition().distance(neighbour.getPosition()) <= range){
+										double sourceNeighbourAngle = angleBetweenTwoSensors(neighbour, source);
+										double sourceOrient = source.getOrientation();
+										//If adding and subtracting the angles doesn't overlap the origin
+										if(((sourceOrient + (anglePhi/2)) <= (2*Math.PI)) && ((sourceOrient - (anglePhi/2)) >= 0)){
+											if((sourceNeighbourAngle <= (sourceOrient + (anglePhi/2)))
+												&& (sourceNeighbourAngle >= (sourceOrient - (anglePhi/2)))){
+												//Add the edge between them
 												addEdge(source, neighbour);
-											}
-										}
-									} else {
-										if((sourceOrient - (anglePhi/2)) < 0){
-											if(((sourceNeighbourAngle <= (sourceOrient + (anglePhi/2)))
-													&& (sourceNeighbourAngle >= 0))
-													|| ((sourceNeighbourAngle >= ((2*Math.PI) + (sourceOrient - (anglePhi/2)))))){
-												addEdge(source, neighbour);
-											}
-										}
-									}
-								} /* if(((sourceOrient + (anglePhi/2)) <= (2*Math.PI)) && ((sourceOrient - (anglePhi/2)) >= 0)) */
-							} /* if(source.getPosition().distance(neighbour.getPosition()) <= range) */	
-							
-							if(destination.getPosition().distance(neighbour.getPosition()) <= range){
-								double destinationNeighbourAngle = angleBetweenTwoSensors(neighbour, destination);
-								double destinationOrient = destination.getOrientation();
-								//If adding and subtracting the angles doesn't overlap the origin
-								if(((destinationOrient + (anglePhi/2)) <= (2*Math.PI)) && ((destinationOrient - (anglePhi/2)) >= 0)){
-									if((destinationNeighbourAngle <= (destination.getOrientation() + (anglePhi/2)))
-										&& (destinationNeighbourAngle >= (destination.getOrientation() - (anglePhi/2)))){
-										//Add the edge between them
-										addEdge(destination, neighbour);
-									}
-								} else {
-									if((destinationOrient + (anglePhi/2)) > (2*Math.PI)){
-										if((destinationOrient - (anglePhi/2)) < 0){
-											//Unlikely situation. In any case, the sweep is more than 2*PI so just accept it.
-											addEdge(destination, neighbour);
+											}									
 										} else {
-											if(((destinationNeighbourAngle >= (destinationOrient - (anglePhi/2))) 
-												    && (destinationNeighbourAngle <= (2*Math.PI)))
-												|| ((destinationNeighbourAngle >= 0)
-													&& (destinationNeighbourAngle <= ((destinationOrient + (anglePhi/2)) - (2*Math.PI))))){
+											if((sourceOrient + (anglePhi/2)) > (2*Math.PI)){
+												if((sourceOrient - (anglePhi/2)) < 0){
+													//Unlikely situation. In any case, the sweep is more than 2*PI so just accept it.
+													addEdge(source, neighbour);
+												} else {
+													if(((sourceNeighbourAngle >= (sourceOrient - (anglePhi/2))) 
+															&& (sourceNeighbourAngle <= (2*Math.PI)))
+														|| ((sourceNeighbourAngle >= 0)
+														    && (sourceNeighbourAngle <= ((sourceOrient + (anglePhi/2)) - (2*Math.PI))))){
+														addEdge(source, neighbour);
+													}
+												}
+											} else {
+												if((sourceOrient - (anglePhi/2)) < 0){
+													if(((sourceNeighbourAngle <= (sourceOrient + (anglePhi/2)))
+															&& (sourceNeighbourAngle >= 0))
+															|| ((sourceNeighbourAngle >= ((2*Math.PI) + (sourceOrient - (anglePhi/2)))))){
+														addEdge(source, neighbour);
+													}
+												}
+											}
+										} /* if(((sourceOrient + (anglePhi/2)) <= (2*Math.PI)) && ((sourceOrient - (anglePhi/2)) >= 0)) */
+									} /* if(source.getPosition().distance(neighbour.getPosition()) <= range) */	
+									
+									if(destination.getPosition().distance(neighbour.getPosition()) <= range){
+										double destinationNeighbourAngle = angleBetweenTwoSensors(neighbour, destination);
+										double destinationOrient = destination.getOrientation();
+										//If adding and subtracting the angles doesn't overlap the origin
+										if(((destinationOrient + (anglePhi/2)) <= (2*Math.PI)) && ((destinationOrient - (anglePhi/2)) >= 0)){
+											if((destinationNeighbourAngle <= (destination.getOrientation() + (anglePhi/2)))
+												&& (destinationNeighbourAngle >= (destination.getOrientation() - (anglePhi/2)))){
+												//Add the edge between them
 												addEdge(destination, neighbour);
 											}
-										}
-									} else {
-										if((destinationOrient - (anglePhi/2)) < 0){
-											if(((destinationNeighbourAngle <= (destinationOrient + (anglePhi/2)))
-													&& (destinationNeighbourAngle >= 0))
-												|| ((destinationNeighbourAngle >= ((2*Math.PI) + (destinationOrient - (anglePhi/2)))))){
-												addEdge(destination, neighbour);
-											}
-										}
-									}									
-								} /* if(((destinationOrient + (anglePhi/2)) <= (2*Math.PI)) && ((destinationOrient - (anglePhi/2)) >= 0)) */
-							} /* if(destination.getPosition().distance(neighbour.getPosition()) <= range) */							
-							
-						} /* if(!neighbour.equals(source) && !neighbour.equals(destination)) */						
-					} /* for(Sensor neighbour : vertices) */
+										} else {
+											if((destinationOrient + (anglePhi/2)) > (2*Math.PI)){
+												if((destinationOrient - (anglePhi/2)) < 0){
+													//Unlikely situation. In any case, the sweep is more than 2*PI so just accept it.
+													addEdge(destination, neighbour);
+												} else {
+													if(((destinationNeighbourAngle >= (destinationOrient - (anglePhi/2))) 
+														    && (destinationNeighbourAngle <= (2*Math.PI)))
+														|| ((destinationNeighbourAngle >= 0)
+															&& (destinationNeighbourAngle <= ((destinationOrient + (anglePhi/2)) - (2*Math.PI))))){
+														addEdge(destination, neighbour);
+													}
+												}
+											} else {
+												if((destinationOrient - (anglePhi/2)) < 0){
+													if(((destinationNeighbourAngle <= (destinationOrient + (anglePhi/2)))
+															&& (destinationNeighbourAngle >= 0))
+														|| ((destinationNeighbourAngle >= ((2*Math.PI) + (destinationOrient - (anglePhi/2)))))){
+														addEdge(destination, neighbour);
+													}
+												}
+											}									
+										} /* if(((destinationOrient + (anglePhi/2)) <= (2*Math.PI)) && ((destinationOrient - (anglePhi/2)) >= 0)) */
+									} /* if(destination.getPosition().distance(neighbour.getPosition()) <= range) */							
+									
+								} /* if(!neighbour.equals(source) && !neighbour.equals(destination)) */									
+							}
 					
+						} /* for(Sensor neighbour : vertices) */
+					}
 				} /* for(SensorEdge e : matching) */
 				
 			} /* if(bfsIt.hasNext()) */

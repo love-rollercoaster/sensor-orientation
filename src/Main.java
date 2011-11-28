@@ -27,7 +27,7 @@ import org.jgrapht.ext.JGraphModelAdapter;
 // FIXME: Lots of side effects
 public class Main extends JApplet {
     private static final long serialVersionUID = 3256444702936019250L;
-    private static final Dimension DEFAULT_SIZE = new Dimension(530, 320);
+    private static final Dimension DEFAULT_SIZE = new Dimension(900, 900);
     private static int sensorRange = 100;
     private static double sensorAngle = Math.toRadians(200.0);
 
