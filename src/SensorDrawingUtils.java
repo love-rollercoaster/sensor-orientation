@@ -15,9 +15,7 @@ public class SensorDrawingUtils {
 
     public static Rectangle2D GetBoundsFromSensor(Sensor sensor) {
         Point2D upLeftCorner = ComputeSensorScreenPosition(sensor);
-        double offset = SENSOR_SCREEN_WIDTH / 2.0;
-        return new Rectangle2D.Double(upLeftCorner.getX()-offset, upLeftCorner.getY()-offset, SENSOR_SCREEN_WIDTH,
-                SENSOR_SCREEN_WIDTH);
+        return new Rectangle2D.Double(upLeftCorner.getX(), upLeftCorner.getY(), SENSOR_SCREEN_WIDTH, SENSOR_SCREEN_WIDTH);
     }
 
     public static double GetSensorScreenWidth() {
@@ -41,8 +39,7 @@ public class SensorDrawingUtils {
         double x = sensor.getPosition().getX();
         double y = sensor.getPosition().getY();
 
-
-        g2d.draw(new Ellipse2D.Double(x, y, 2, 2));
+        g2d.draw(new Ellipse2D.Double(x-1, y-1, 2, 2));
     }
 
     private static Shape GetOmnidirectionalShape(Sensor sensor) {
@@ -73,22 +70,20 @@ public class SensorDrawingUtils {
         double orientation = Math.toDegrees(sensor.getOrientation());
         double extent = Math.toDegrees(Sensor.GetAngle());
         double start  = orientation - extent / 2.0;
-        Point2D sensorCenter = ComputeSensorScreenPosition(sensor);
-        double x = sensorCenter.getX() - radius / 2.0;
-        double y = sensorCenter.getY() - radius / 2.0;
 
+        Point2D sensorPosition = sensor.getPosition();
+        double x = sensorPosition.getX() - radius / 2.0;
+        double y = sensorPosition.getY() - radius / 2.0;
 
         return new Arc2D.Double(x, y, width, height, start, extent, Arc2D.PIE);
     }
 
 
-
-    private static Point2D ComputeSensorScreenPosition(Sensor sensor) {
+    public static Point2D ComputeSensorScreenPosition(Sensor sensor) {
         Point2D sensorPosition = sensor.getPosition();
         double centerX = sensorPosition.getX() - SENSOR_SCREEN_WIDTH / 2.0;
         double centerY = sensorPosition.getY() - SENSOR_SCREEN_WIDTH / 2.0;
 
         return new Point2D.Double(centerX, centerY);
     }
-
 }

@@ -110,8 +110,10 @@ public class Main extends JApplet {
         AttributeMap cellAttributes = cell.getAttributes();
         Rectangle2D cellBounds = GraphConstants.getBounds(cellAttributes);
 
-        double offset = SensorDrawingUtils.GetSensorScreenWidth()/2.0;
-        sensor.setPosition(cellBounds.getCenterX()+offset, cellBounds.getCenterY()+offset);
+        double centerX = cellBounds.getCenterX();
+        double centerY = cellBounds.getCenterY();
+
+        sensor.setPosition(centerX, centerY);
     }
 
     private void positionSensorsOnJGraph(JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter, Set<Sensor> sensors) {
