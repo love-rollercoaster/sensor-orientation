@@ -21,7 +21,6 @@ import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgrapht.demo.JGraphAdapterDemo;
 import org.jgrapht.ext.JGraphModelAdapter;
-import org.jgrapht.graph.DefaultEdge;
 
 // FIXME: Lots of side effects
 public class Main extends JApplet {
@@ -31,7 +30,7 @@ public class Main extends JApplet {
 
     private JGraph jgraph = null;
     private Set<Sensor> sensors = new HashSet<Sensor>();
-    private JGraphModelAdapter<Sensor, DefaultEdge> jgraphAdapter = null;
+    private JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter = null;
     private MouseAdapter mouseAdapter = null;
 
     public static void main(String[] args) {
@@ -92,8 +91,10 @@ public class Main extends JApplet {
     }
 
     private void initJGraphT() {
-        ProximityGraph proximityGraph = (new GraphFactory()).makeProximityGraphFromSensors(sensors);
-        jgraphAdapter = (new JGraphConverter()).convertProximityGraphToJGraph(proximityGraph);
+        //ProximityGraph proximityGraph = (new GraphFactory()).makeProximityGraphFromSensors(sensors);
+    	ProximityGraph proximityGraph = new ProximityGraph(sensors);
+        //jgraphAdapter = (new JGraphConverter()).convertProximityGraphToJGraph(proximityGraph);
+    	jgraphAdapter = (new JGraphConverter()).convertProximityGraphToJGraph(proximityGraph);
     }
 
     private void recomputeJGraphT() {
@@ -127,7 +128,7 @@ public class Main extends JApplet {
     }
 
     @SuppressWarnings("unchecked")
-    private void positionSensorOnJgraph(JGraphModelAdapter<Sensor, DefaultEdge> jgraphAdapter, Sensor sensor) {
+    private void positionSensorOnJgraph(JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter, Sensor sensor) {
         DefaultGraphCell cell = jgraphAdapter.getVertexCell(sensor);
 
         AttributeMap cellAttributes = cell.getAttributes();
