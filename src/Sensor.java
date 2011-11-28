@@ -2,8 +2,8 @@ import java.awt.geom.Point2D;
 
 public class Sensor {
     private static int NextId = 0;
-    private static Double Range;
-    private static Double Angle;
+    private static Double Range = 1.0;
+    private static Double Angle = Math.PI;
 
     private final int id;
     private Point2D position;
@@ -67,5 +67,20 @@ public class Sensor {
     @Override
     public String toString() {
         return Integer.toString(id);
+    }
+    
+    public int getID(){
+    	return id;
+    }
+    
+    public boolean equals(Sensor s){
+    	boolean result = false;
+    	if(this == s){
+    		result = true;
+    	} else if(id == s.getID()){
+    		result = true;
+    	}
+    	//I think checking against id is enough
+    	return result;
     }
 }

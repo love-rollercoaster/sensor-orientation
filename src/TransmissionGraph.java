@@ -19,6 +19,7 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 	private Double range;
 	private ProximityGraph proxGraph;
 	private ProximityGraph minSpanTree;
+	private StrongConnectivityInspector<Sensor, SensorEdge> connectivityInsp = null;
 
 	public TransmissionGraph(Set<SensorEdge> myEdges, Set<Sensor> myVertices) {
 		KruskalMinimumSpanningTree<Sensor, SensorEdge> myMST;
@@ -32,11 +33,17 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		myMST = new KruskalMinimumSpanningTree<Sensor, SensorEdge>(proxGraph);
 		//minSpanTree = new ProximityGraph(myMST.getEdgeSet(), myVertices);
 		minSpanTree = new ProximityGraph(myVertices);
-		minSpanTree.removeAllEdges(minSpanTree.edgeSet());
+		Set<SensorEdge> mstEdges = new HashSet<SensorEdge>(minSpanTree.edgeSet());
+		minSpanTree.removeAllEdges(mstEdges);
 		for(SensorEdge e : myMST.getEdgeSet()){
 			minSpanTree.addEdge(e.getSource(), e.getDestination());
 		}
 		orientAntennae();
+		connectivityInsp = new StrongConnectivityInspector<Sensor, SensorEdge>(this);
+		//assert(connectivityInsp.isStronglyConnected() == true);
+		if(connectivityInsp.isStronglyConnected()){
+			System.out.println("Graph is strongly connected.");
+		}
 	}
 
 	// TODO Clean this up. If we use getters or something for angle/range it
@@ -53,11 +60,17 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		myMST = new KruskalMinimumSpanningTree<Sensor, SensorEdge>(proxGraph);
 		//minSpanTree = new ProximityGraph(myMST.getEdgeSet(), vertices);
 		minSpanTree = new ProximityGraph(vertices);
-		minSpanTree.removeAllEdges(minSpanTree.edgeSet());
+		Set<SensorEdge> mstEdges = new HashSet<SensorEdge>(minSpanTree.edgeSet());
+		minSpanTree.removeAllEdges(mstEdges);
 		for(SensorEdge e : myMST.getEdgeSet()){
 			minSpanTree.addEdge(e.getSource(), e.getDestination());
 		}		
 		orientAntennae();
+		connectivityInsp = new StrongConnectivityInspector<Sensor, SensorEdge>(this);
+		//assert(connectivityInsp.isStronglyConnected() == true);	
+		if(connectivityInsp.isStronglyConnected()){
+			System.out.println("Graph is strongly connected.");
+		}
 	}
 
 	public TransmissionGraph(ProximityGraph toCopy) {
@@ -71,11 +84,17 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		myMST = new KruskalMinimumSpanningTree<Sensor, SensorEdge>(proxGraph);
 		//minSpanTree = new ProximityGraph(myMST.getEdgeSet(), vertices);
 		minSpanTree = new ProximityGraph(vertices);
-		minSpanTree.removeAllEdges(minSpanTree.edgeSet());
+		Set<SensorEdge> mstEdges = new HashSet<SensorEdge>(minSpanTree.edgeSet());
+		minSpanTree.removeAllEdges(mstEdges);
 		for(SensorEdge e : myMST.getEdgeSet()){
 			minSpanTree.addEdge(e.getSource(), e.getDestination());
 		}				
 		orientAntennae();
+		connectivityInsp = new StrongConnectivityInspector<Sensor, SensorEdge>(this);
+		//assert(connectivityInsp.isStronglyConnected() == true);
+		if(connectivityInsp.isStronglyConnected()){
+			System.out.println("Graph is strongly connected.");
+		}		
 	}
 
 	private void orientAntennae() {

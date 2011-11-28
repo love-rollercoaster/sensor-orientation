@@ -29,6 +29,7 @@ public class Main extends JApplet {
     private static final long serialVersionUID = 3256444702936019250L;
     private static final Dimension DEFAULT_SIZE = new Dimension(530, 320);
     private static int sensorRange = 100;
+    private static double sensorAngle = Math.toRadians(200.0);
 
     private JGraph jgraph = null;
     private Set<Sensor> sensors = new HashSet<Sensor>();
@@ -86,15 +87,27 @@ public class Main extends JApplet {
 
     private void initSensors() {
         Sensor.SetRange(sensorRange);
+        Sensor.SetAngle(sensorAngle);
         sensors = new HashSet<Sensor>();
         sensors.add(new Sensor(new Point2D.Double(130, 40)));
         sensors.add(new Sensor(new Point2D.Double(130, 100)));
         sensors.add(new Sensor(new Point2D.Double(190, 100)));
+        sensors.add(new Sensor(new Point2D.Double(10, 10)));
+        sensors.add(new Sensor(new Point2D.Double(19, 10)));
+        sensors.add(new Sensor(new Point2D.Double(57, 63)));
+        sensors.add(new Sensor(new Point2D.Double(94, 88)));
+        sensors.add(new Sensor(new Point2D.Double(105, 77)));
+        sensors.add(new Sensor(new Point2D.Double(65, 66)));
+        sensors.add(new Sensor(new Point2D.Double(83, 23)));
+        sensors.add(new Sensor(new Point2D.Double(49, 101)));
+        sensors.add(new Sensor(new Point2D.Double(73, 71)));
     }
 
     private void initJGraphT() {
     	ProximityGraph proximityGraph = new ProximityGraph(sensors);
-    	jgraphAdapter = (new JGraphConverter()).convertProximityGraphToJGraph(proximityGraph);
+    	TransmissionGraph transGraph = new TransmissionGraph(proximityGraph);
+    	//jgraphAdapter = (new JGraphConverter()).convertProximityGraphToJGraph(proximityGraph);
+    	jgraphAdapter = (new JGraphConverter()).convertTransGraphToJGraph(transGraph);
     }
 
     private void recomputeJGraphT() {
