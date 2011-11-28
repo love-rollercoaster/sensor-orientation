@@ -32,12 +32,13 @@ public class Main extends JApplet {
     private static final long serialVersionUID = 3256444702936019250L;
     private static final Dimension DEFAULT_SIZE = new Dimension(900, 900);
     private static int sensorRange = 100;
+    private static double sensorAngle = Math.toRadians(200.0);
 
     private JGraph jgraph;
     private Set<Sensor> vertices;
     private MouseAdapter mouseAdapter;
 
-    private JGraphTFactory jgraphtFactory;
+    private JGraphFactory guiView;
 
 
     public static void main(String[] args) {
@@ -56,7 +57,7 @@ public class Main extends JApplet {
         setupButtons();
         initMouseAdapter();
 
-        show(new TransmissionGraphFactory(), new TransmissionGraph(createTestSensors()));
+        show(new TransmissionGraphGUIView(), createTestDirectedGraph());
 
         resize(DEFAULT_SIZE);
     }
@@ -72,9 +73,34 @@ public class Main extends JApplet {
         }
     }
 
-    public void show(JGraphTFactory jgraphtFactory, Graph<Sensor, SensorEdge> jgrapht) {
-        this.vertices = jgrapht.vertexSet();
-        this.jgraphtFactory = jgraphtFactory;
+<<<<<<< HEAD
+    private void initSensors() {
+        Sensor.SetRange(sensorRange);
+        Sensor.SetAngle(sensorAngle);
+        sensors = new HashSet<Sensor>();
+        sensors.add(new Sensor(new Point2D.Double(130, 40)));
+        sensors.add(new Sensor(new Point2D.Double(130, 100)));
+        sensors.add(new Sensor(new Point2D.Double(190, 100)));
+        sensors.add(new Sensor(new Point2D.Double(10, 10)));
+        sensors.add(new Sensor(new Point2D.Double(19, 10)));
+        sensors.add(new Sensor(new Point2D.Double(57, 63)));
+        sensors.add(new Sensor(new Point2D.Double(94, 88)));
+        sensors.add(new Sensor(new Point2D.Double(105, 77)));
+        sensors.add(new Sensor(new Point2D.Double(65, 66)));
+        sensors.add(new Sensor(new Point2D.Double(83, 23)));
+        sensors.add(new Sensor(new Point2D.Double(49, 101)));
+        sensors.add(new Sensor(new Point2D.Double(73, 71)));
+    }
+
+    private void initJGraphT() {
+    	ProximityGraph proximityGraph = new ProximityGraph(sensors);
+    	TransmissionGraph transGraph = new TransmissionGraph(proximityGraph);
+    	//jgraphAdapter = (new JGraphConverter()).convertProximityGraphToJGraph(proximityGraph);
+    	jgraphAdapter = (new JGraphConverter()).convertTransGraphToJGraph(transGraph);
+    }
+=======
+    public void show(JGraphFactory guiView, Graph<Sensor, SensorEdge> jgrapht) {
+        vertices = jgrapht.vertexSet();
         JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter = (new JGraphConverter()).convertFromJGraphT(jgrapht);
         resetJGraph(jgraphAdapter, vertices);
     }
@@ -83,6 +109,7 @@ public class Main extends JApplet {
         if (jgraph != null) {
             remove(jgraph);
         }
+>>>>>>> f4a3b79a9751c65b77ad8e4bceae30479accf5f6
 
         jgraph = createJGraph(jgraphAdapter);
         add(jgraph);
@@ -133,7 +160,7 @@ public class Main extends JApplet {
                 }
 
                 // FIXME
-                show(jgraphtFactory, jgraphtFactory.createGraph(vertices));
+                show(guiView.createGraph(vertices));
             }
         };
     }
@@ -193,31 +220,13 @@ public class Main extends JApplet {
         frame.setBackground(ColorTheme.Black);
     }
 
-    private Set<Sensor> createTestSensors() {
+    private ProximityGraph createTestProximityGraph() {
         Set<Sensor> sensors = new HashSet<Sensor>();
         sensors.add(new Sensor(new Point2D.Double(130, 40)));
         sensors.add(new Sensor(new Point2D.Double(130, 100)));
         sensors.add(new Sensor(new Point2D.Double(190, 100)));
-        sensors.add(new Sensor(new Point2D.Double(130, 40)));
-        sensors.add(new Sensor(new Point2D.Double(130, 100)));
-        sensors.add(new Sensor(new Point2D.Double(190, 100)));
-        sensors.add(new Sensor(new Point2D.Double(10, 10)));
-        sensors.add(new Sensor(new Point2D.Double(19, 10)));
-        sensors.add(new Sensor(new Point2D.Double(57, 63)));
-        sensors.add(new Sensor(new Point2D.Double(94, 88)));
-        sensors.add(new Sensor(new Point2D.Double(105, 77)));
-        sensors.add(new Sensor(new Point2D.Double(65, 66)));
-        sensors.add(new Sensor(new Point2D.Double(83, 23)));
-        sensors.add(new Sensor(new Point2D.Double(49, 101)));
-        sensors.add(new Sensor(new Point2D.Double(73, 71)));
 
-        return sensors;
-    }
-
-
-    private ProximityGraph createTestProximityGraph() {
-
-        return new ProximityGraph(createTestSensors());
+        return new ProximityGraph(sensors);
     }
 
     private SimpleDirectedGraph<Sensor, SensorEdge> createTestDirectedGraph() {
