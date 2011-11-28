@@ -52,6 +52,7 @@ public class Main extends JApplet {
     public void init() {
         super.init();
         Sensor.SetRange(sensorRange); // FIXME
+        Sensor.SetAngle(3 * Math.PI / 2);
 
         setupButtons();
         initMouseAdapter();
