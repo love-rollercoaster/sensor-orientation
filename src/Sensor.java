@@ -30,7 +30,7 @@ public class Sensor {
         this.id = NextId++;
         orientationAngle = 0.0;
     }
-    
+
     public Sensor(Point2D position, double orientation) {
         this.position = position;
         this.id = NextId++;
@@ -38,14 +38,14 @@ public class Sensor {
     }
 
     public double getOrientation(){
-    	return orientationAngle;
+        return orientationAngle;
     }
-    
+
     public void setOrientation(double orientation){
         orientationAngle = orientation;
         return;
     }
-    
+
     public Point2D getPosition() {
         return position;
     }
