@@ -5,8 +5,6 @@ import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.EdgeFactory;
-import org.jgrapht.Graph;
-import org.jgrapht.UndirectedGraph;
 import org.jgrapht.WeightedGraph;
 import org.jgrapht.alg.*;
 import org.jgrapht.traverse.BreadthFirstIterator;
@@ -177,18 +175,92 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 				} /* for(Sensor s : leaves) */
 				
 				for(SensorEdge e : matching){
-					addEdge(e.getSource(), e.getDestination());
-					addEdge(e.getDestination(), e.getSource());
-					double angleFromSourceToDest = angleBetweenTwoSensors(e.getDestination(), e.getSource());
-					double angleFromDestToSource = angleBetweenTwoSensors(e.getSource(), e.getDestination());
-					double sourceDestRemainder = Math.PI - angleFromSourceToDest;
-					double destSourceRemainder = Math.PI - angleFromDestToSource;
+					Sensor source = e.getSource();
+					Sensor destination = e.getDestination();
+					addEdge(source, destination);
+					addEdge(destination, source);
+					double angleFromSourceToDest = angleBetweenTwoSensors(destination, source);
+					double angleFromDestToSource = angleBetweenTwoSensors(source, destination);
+//					double sourceDestRemainder = Math.PI - angleFromSourceToDest;
+//					double destSourceRemainder = Math.PI - angleFromDestToSource;
+					//Orient them so that they see each other at the edge of their vision
+					source.setOrientation(angleFromSourceToDest + (anglePhi/2));
+					destination.setOrientation(angleFromDestToSource + (anglePhi/2));
+					//FIXME: This algorithm orients, then considers neighbours. It would be nice if we could consider neighbours
+					//and then orient.
 					for(Sensor neighbour : vertices){
-						if(e.getSource().getPosition().distance(neighbour.getPosition()) <= range){
-							if(angleBetweenTwoSensors(neighbour, e.getSource()) <= ()){
-								
-							}
-						}
+						if(!neighbour.equals(source) && !neighbour.equals(destination)){
+							if(source.getPosition().distance(neighbour.getPosition()) <= range){
+								double sourceNeighbourAngle = angleBetweenTwoSensors(neighbour, source);
+								double sourceOrient = source.getOrientation();
+								//If adding and subtracting the angles doesn't overlap the origin
+								if(((sourceOrient + (anglePhi/2)) <= (2*Math.PI)) && ((sourceOrient - (anglePhi/2)) >= 0)){
+									if((sourceNeighbourAngle <= (sourceOrient + (anglePhi/2)))
+										&& (sourceNeighbourAngle >= (sourceOrient - (anglePhi/2)))){
+										//Add the edge between them
+										addEdge(source, neighbour);
+									}									
+								} else {
+									if((sourceOrient + (anglePhi/2)) > (2*Math.PI)){
+										if((sourceOrient - (anglePhi/2)) < 0){
+											//Unlikely situation. In any case, the sweep is more than 2*PI so just accept it.
+											addEdge(source, neighbour);
+										} else {
+											if(((sourceNeighbourAngle >= (sourceOrient - (anglePhi/2))) 
+													&& (sourceNeighbourAngle <= (2*Math.PI)))
+												|| ((sourceNeighbourAngle >= 0)
+												    && (sourceNeighbourAngle <= ((sourceOrient + (anglePhi/2)) - (2*Math.PI))))){
+												addEdge(source, neighbour);
+											}
+										}
+									} else {
+										if((sourceOrient - (anglePhi/2)) < 0){
+											if(((sourceNeighbourAngle <= (sourceOrient + (anglePhi/2)))
+													&& (sourceNeighbourAngle >= 0))
+													|| ((sourceNeighbourAngle >= ((2*Math.PI) + (sourceOrient - (anglePhi/2)))))){
+												addEdge(source, neighbour);
+											}
+										}
+									}
+								} /* if(((sourceOrient + (anglePhi/2)) <= (2*Math.PI)) && ((sourceOrient - (anglePhi/2)) >= 0)) */
+							} /* if(source.getPosition().distance(neighbour.getPosition()) <= range) */	
+							
+							if(destination.getPosition().distance(neighbour.getPosition()) <= range){
+								double destinationNeighbourAngle = angleBetweenTwoSensors(neighbour, destination);
+								double destinationOrient = destination.getOrientation();
+								//If adding and subtracting the angles doesn't overlap the origin
+								if(((destinationOrient + (anglePhi/2)) <= (2*Math.PI)) && ((destinationOrient - (anglePhi/2)) >= 0)){
+									if((destinationNeighbourAngle <= (destination.getOrientation() + (anglePhi/2)))
+										&& (destinationNeighbourAngle >= (destination.getOrientation() - (anglePhi/2)))){
+										//Add the edge between them
+										addEdge(destination, neighbour);
+									}
+								} else {
+									if((destinationOrient + (anglePhi/2)) > (2*Math.PI)){
+										if((destinationOrient - (anglePhi/2)) < 0){
+											//Unlikely situation. In any case, the sweep is more than 2*PI so just accept it.
+											addEdge(destination, neighbour);
+										} else {
+											if(((destinationNeighbourAngle >= (destinationOrient - (anglePhi/2))) 
+												    && (destinationNeighbourAngle <= (2*Math.PI)))
+												|| ((destinationNeighbourAngle >= 0)
+													&& (destinationNeighbourAngle <= ((destinationOrient + (anglePhi/2)) - (2*Math.PI))))){
+												addEdge(destination, neighbour);
+											}
+										}
+									} else {
+										if((destinationOrient - (anglePhi/2)) < 0){
+											if(((destinationNeighbourAngle <= (destinationOrient + (anglePhi/2)))
+													&& (destinationNeighbourAngle >= 0))
+												|| ((destinationNeighbourAngle >= ((2*Math.PI) + (destinationOrient - (anglePhi/2)))))){
+												addEdge(destination, neighbour);
+											}
+										}
+									}									
+								} /* if(((destinationOrient + (anglePhi/2)) <= (2*Math.PI)) && ((destinationOrient - (anglePhi/2)) >= 0)) */
+							} /* if(destination.getPosition().distance(neighbour.getPosition()) <= range) */							
+							
+						} /* if(!neighbour.equals(source) && !neighbour.equals(destination)) */						
 					} /* for(Sensor neighbour : vertices) */
 					
 				} /* for(SensorEdge e : matching) */
@@ -197,10 +269,36 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		} /* if(vertices.iterator().hasNext()) */
 		return;
 	}
-	//TODO atan only returns between -pi/2 and pi/2. Will that be a problem? I think so but how to fix it?
+
+	/**
+	 * 
+	 * @param to - the vertex we are measuring to
+	 * @param from - the vertex we are measuring from
+	 * @return the angle between the two vertices expressed as a value between 0 and 2pi
+	 */
 	private double angleBetweenTwoSensors(Sensor to, Sensor from){
-		return Math.atan((to.getPosition().getY() - from.getPosition().getY()) 
-						/ (to.getPosition().getX() - from.getPosition().getX()));
+		double heightDiff = to.getPosition().getY() - from.getPosition().getY();
+		double strideDiff = to.getPosition().getX() - from.getPosition().getX();
+		double result = Math.atan( heightDiff / strideDiff);
+		//Correct for quadrant so we get a value between 0 and 2*PI
+		if(heightDiff >= 0){
+			if(strideDiff < 0){
+				//The dest must be in quadrant 2 and result must be negative
+				//This will give us an angle between pi/2 and pi
+				result = Math.PI + result;
+			}
+		} else {
+			if(strideDiff >= 0){
+				//The dest must be in quadrant 4 and the result must be negative
+				//This will give us an angle between 3pi/2 and 2pi
+				result = (2*Math.PI) + result;
+			} else {
+				//The dest must be in quadrant 3 and must be positive
+				//This will give us an angle between pi and 3pi/2
+				result = Math.PI + result;
+			}
+		}
+		return result;
 	}
 
 	/**
