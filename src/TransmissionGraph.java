@@ -24,19 +24,18 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		KruskalMinimumSpanningTree<Sensor, SensorEdge> myMST;
 		edges = new HashSet<SensorEdge>();
 		vertices = myVertices;
-		if (!vertices.isEmpty()) {
-			Iterator<Sensor> verticesIterator = vertices.iterator();
-			// This next check should be unnecessary
-			if (verticesIterator.hasNext()) {
-				Sensor s = verticesIterator.next();
-				anglePhi = Sensor.GetAngle();
-				range = Sensor.GetRange();
-			}
-		}
+		anglePhi = Sensor.GetAngle();
+		range = Sensor.GetRange();		
 		edgeFactory = new SensorEdgeFactory();
-		proxGraph = new ProximityGraph(myEdges, myVertices);
+		//proxGraph = new ProximityGraph(myEdges, myVertices);
+		proxGraph = new ProximityGraph(myVertices);
 		myMST = new KruskalMinimumSpanningTree<Sensor, SensorEdge>(proxGraph);
-		minSpanTree = new ProximityGraph(myMST.getEdgeSet(), myVertices);
+		//minSpanTree = new ProximityGraph(myMST.getEdgeSet(), myVertices);
+		minSpanTree = new ProximityGraph(myVertices);
+		minSpanTree.removeAllEdges(minSpanTree.edgeSet());
+		for(SensorEdge e : myMST.getEdgeSet()){
+			minSpanTree.addEdge(e.getSource(), e.getDestination());
+		}
 		orientAntennae();
 	}
 
@@ -46,19 +45,18 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		KruskalMinimumSpanningTree<Sensor, SensorEdge> myMST;
 		edges = new HashSet<SensorEdge>();
 		vertices = toCopy.vertexSet();
-		if (!vertices.isEmpty()) {
-			Iterator<Sensor> verticesIterator = vertices.iterator();
-			// This next check should be unnecessary
-			if (verticesIterator.hasNext()) {
-				Sensor s = verticesIterator.next();
-				anglePhi = Sensor.GetAngle();
-				range = Sensor.GetRange();
-			}
-		}
+		anglePhi = Sensor.GetAngle();
+		range = Sensor.GetRange();		
 		edgeFactory = new SensorEdgeFactory();
-		proxGraph = new ProximityGraph(edges, vertices);
+		//proxGraph = new ProximityGraph(edges, vertices);
+		proxGraph = new ProximityGraph(vertices);
 		myMST = new KruskalMinimumSpanningTree<Sensor, SensorEdge>(proxGraph);
-		minSpanTree = new ProximityGraph(myMST.getEdgeSet(), vertices);
+		//minSpanTree = new ProximityGraph(myMST.getEdgeSet(), vertices);
+		minSpanTree = new ProximityGraph(vertices);
+		minSpanTree.removeAllEdges(minSpanTree.edgeSet());
+		for(SensorEdge e : myMST.getEdgeSet()){
+			minSpanTree.addEdge(e.getSource(), e.getDestination());
+		}		
 		orientAntennae();
 	}
 
@@ -66,19 +64,17 @@ public class TransmissionGraph implements DirectedGraph<Sensor, SensorEdge> {
 		KruskalMinimumSpanningTree<Sensor, SensorEdge> myMST;
 		edges = new HashSet<SensorEdge>();
 		vertices = toCopy.vertexSet();
-		if (!vertices.isEmpty()) {
-			Iterator<Sensor> verticesIterator = vertices.iterator();
-			// This next check should be unnecessary
-			if (verticesIterator.hasNext()) {
-				Sensor s = verticesIterator.next();
-				anglePhi = Sensor.GetAngle();
-				range = Sensor.GetRange();
-			}
-		}
+		anglePhi = Sensor.GetAngle();
+		range = Sensor.GetRange();		
 		edgeFactory = new SensorEdgeFactory();
 		proxGraph = toCopy;
 		myMST = new KruskalMinimumSpanningTree<Sensor, SensorEdge>(proxGraph);
-		minSpanTree = new ProximityGraph(myMST.getEdgeSet(), vertices);
+		//minSpanTree = new ProximityGraph(myMST.getEdgeSet(), vertices);
+		minSpanTree = new ProximityGraph(vertices);
+		minSpanTree.removeAllEdges(minSpanTree.edgeSet());
+		for(SensorEdge e : myMST.getEdgeSet()){
+			minSpanTree.addEdge(e.getSource(), e.getDestination());
+		}				
 		orientAntennae();
 	}
 
