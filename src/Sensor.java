@@ -2,47 +2,53 @@ import java.awt.geom.Point2D;
 
 public class Sensor {
     private static int NextId = 0;
-    private static Double range;
+    private static Double Range;
+    private static Double Angle;
 
-    private Point2D position;
-    private final Double  angle;
     private final int id;
+    private Point2D position;
     private Double orientationAngle;
 
-    public Sensor(Point2D position) {
-        this(position, 2 * Math.PI, 0.0);
+    public static double GetRange() {
+        return Range;
     }
 
-    public Sensor(Point2D position, double angle, double orientation) {
+    public static double GetAngle() {
+        return Angle;
+    }
+
+
+    public static void SetRange(double range) {
+        Sensor.Range = range;
+    }
+
+    public static void SetAngle(double angle) {
+        Sensor.Angle = angle;
+    }
+
+    public Sensor(Point2D position) {
         this.position = position;
-        this.angle = angle;
+        this.id = NextId++;
+        orientationAngle = 0.0;
+    }
+    
+    public Sensor(Point2D position, double orientation) {
+        this.position = position;
         this.id = NextId++;
         orientationAngle = orientation;
     }
 
-    public static void SetRange(double range) {
-        Sensor.range = range;
-    }
-
-    public Point2D getPosition() {
-        return position;
-    }
-
-    public double getAngle() {
-        return angle;
-    }
-//TODO: Should this getRange be a static function?
-    public double getRange() {
-        return range;
-    }
-    
     public double getOrientation(){
     	return orientationAngle;
     }
     
     public void setOrientation(double orientation){
-    	orientationAngle = orientation;
-    	return;
+        orientationAngle = orientation;
+        return;
+    }
+    
+    public Point2D getPosition() {
+        return position;
     }
 
     public void setPosition(Point2D position) {
@@ -53,16 +59,10 @@ public class Sensor {
         this.position = new Point2D.Double(x, y);
     }
 
-    /**
-     * FIXME: We have to change this when we deal with directional stuff.
-     */
+    // FIXME: this method only supports omnidirectional sensors.
     public boolean canReach(Sensor sensor) {
-        if (angle.compareTo(2*Math.PI) != 0) {
-            throw new RuntimeException("Not implemented with sensors with directional antennas");
-        }
-
         Double distanceBetweenSensors = this.position.distance(sensor.getPosition());
-        return distanceBetweenSensors.compareTo(range) < 0;
+        return distanceBetweenSensors.compareTo(Range) < 0;
     }
 
     @Override
