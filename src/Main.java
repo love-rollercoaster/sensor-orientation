@@ -78,6 +78,16 @@ public class Main extends JApplet {
         this.jgraphtFactory = jgraphtFactory;
         JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter = (new JGraphConverter()).convertFromJGraphT(jgrapht);
         resetJGraph(jgraphAdapter, vertices);
+
+        System.out.println("=== Graph ====================================");
+
+        for (Sensor sensor : jgrapht.vertexSet()) {
+            System.out.print("Sensor " + sensor + ": ");
+            System.out.print("angle = " + Math.toDegrees(sensor.getOrientation()));
+            System.out.println("");
+        }
+        System.out.println("");
+
     }
 
     private void resetJGraph(JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter, Set<Sensor> vertices) {

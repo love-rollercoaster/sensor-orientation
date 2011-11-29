@@ -55,9 +55,12 @@ public class SensorDrawingUtils {
         Point2D position = sensor.getPosition();
 
         double angle = sensor.getOrientation();
+
+        System.out.println(sensor + ": " + Math.toDegrees(angle));
+
         double range = Sensor.GetRange();
         double x = position.getX() + range * Math.cos(angle);
-        double y = position.getY() + range * Math.sin(angle);
+        double y = position.getY() - range * Math.sin(angle);
 
         return new Line2D.Double(position.getX(), position.getY(), x, y);
     }
@@ -68,7 +71,10 @@ public class SensorDrawingUtils {
         width = height = radius = Sensor.GetRange();
 
         double orientation = Math.toDegrees(sensor.getOrientation());
+
         double extent = Math.toDegrees(Sensor.GetAngle());
+
+
         double start  = orientation - extent / 2.0;
 
         Point2D sensorPosition = sensor.getPosition();

@@ -185,8 +185,11 @@ public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
 
                     // Orient them so that they see each other at the edge
                     // of their vision
-                    source.setOrientation(angleFromSourceToDest + (anglePhi / 2));
-                    destination.setOrientation(angleFromDestToSource + (anglePhi / 2));
+                    // source.setOrientation(angleFromSourceToDest + (anglePhi / 2));
+                    // destination.setOrientation(angleFromDestToSource + (anglePhi / 2));
+
+                     source.setOrientation(angleFromSourceToDest);
+                     destination.setOrientation(angleFromDestToSource);
 
                     // FIXME: This algorithm orients, then considers
                     // neighbours. It would be nice if we could consider
@@ -289,26 +292,48 @@ public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
     private double angleBetweenTwoSensors(Sensor to, Sensor from) {
         double heightDiff = to.getPosition().getY() - from.getPosition().getY();
         double strideDiff = to.getPosition().getX() - from.getPosition().getX();
-        double result = Math.atan(heightDiff / strideDiff);
+
+        double oppositeOverAdjacent;
+        if (heightDiff < 0) {
+            oppositeOverAdjacent = strideDiff / heightDiff;
+        } else {
+            oppositeOverAdjacent = heightDiff / strideDiff;
+        }
+
+
+        double result = Math.atan(oppositeOverAdjacent);
 
         return correctAngleForQuandrant(heightDiff, strideDiff, result);
     }
 
     private double correctAngleForQuandrant(double heightDiff, double strideDiff, double angle) {
+        boolean positiveY = heightDiff >= 0;
+        boolean positiveX = strideDiff >= 0;
 
-        if (heightDiff >= 0) {
 
-            if (strideDiff < 0) {
+        if (positiveY) {
+
+            // Quadrant 2
+            if (!positiveX) {
                 // The dest must be in quadrant 2 and result must be negative
                 // This will give us an angle between pi/2 and pi
                 angle += Math.PI;
             }
+            // Quandrant 1
+            else {
+
+            }
+
         } else {
-            if (strideDiff >= 0) {
+
+            // Quandrant 4 (3pi/2 and 2pi)
+            if (positiveX) {
                 // The dest must be in quadrant 4 and the result must be
                 // negative
-                // This will give us an angle between 3pi/2 and 2pi
+                // This will give us an angle between
                 angle += 2 * Math.PI;
+
+            // Quadrant 3
             } else {
                 // The dest must be in quadrant 3 and must be positive
                 // This will give us an angle between pi and 3pi/2
