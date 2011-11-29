@@ -13,9 +13,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 import org.jgraph.JGraph;
 import org.jgraph.graph.AttributeMap;
@@ -29,16 +32,19 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 
 // FIXME: Lots of side effects
 public class Main extends JApplet {
+
+    private static final int GRAPH_WIDTH = 900;
+    private static final int GRAPH_HEIGHT = 900;
+
     private static final long serialVersionUID = 3256444702936019250L;
-    private static final Dimension DEFAULT_SIZE = new Dimension(900, 900);
+    private static final Dimension DEFAULT_SIZE = new Dimension(GRAPH_WIDTH, GRAPH_HEIGHT);
     private static int sensorRange = 100;
 
     private JGraph jgraph;
     private Set<Sensor> vertices;
     private MouseAdapter mouseAdapter;
-
-    private JGraphTFactory jgraphtFactory;
-
+    private GraphFactory selectedGraphFactory;
+    private JPanel graphFactoryPanel;
 
     public static void main(String[] args) {
         JGraphAdapterDemo applet = new JGraphAdapterDemo();
@@ -54,10 +60,11 @@ public class Main extends JApplet {
         Sensor.SetRange(sensorRange); // FIXME
         Sensor.SetAngle(3 * Math.PI / 2);
 
-        setupButtons();
+        initRadioButtons();
         initMouseAdapter();
 
-        show(new TransmissionGraphFactory(), new TransmissionGraph(createTestSensors()));
+        GraphFactory graphFactory = new ProximityGraphFactory();
+        showGraph(graphFactory, graphFactory.createGraph(createTestSensors()));
 
         resize(DEFAULT_SIZE);
     }
@@ -67,34 +74,37 @@ public class Main extends JApplet {
         super.paint(g);
 
         Graphics jgraphGraphics = jgraph.getGraphics();
-
-        for (Sensor sensor : vertices) {
-            SensorDrawingUtils.PaintSensorRange(jgraphGraphics, sensor);
-        }
+        selectedGraphFactory.paint(jgraphGraphics, vertices);
     }
 
-    public void show(JGraphTFactory jgraphtFactory, Graph<Sensor, SensorEdge> jgrapht) {
+    public void showGraphWithDifferentGraphFactory(GraphFactory jgraphtFactory) {
+        showGraph(jgraphtFactory, jgraphtFactory.createGraph(vertices));
+        repaint();
+    }
+
+    // FIXME: Side effects
+    public void showGraph(GraphFactory jgraphtFactory, Graph<Sensor, SensorEdge> jgrapht) {
         this.vertices = jgrapht.vertexSet();
-        this.jgraphtFactory = jgraphtFactory;
+        this.selectedGraphFactory = jgraphtFactory;
+        initGraphFactoryPanel(jgraphtFactory);
+
         JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter = (new JGraphConverter()).convertFromJGraphT(jgrapht);
         resetJGraph(jgraphAdapter, vertices);
+    }
 
-        System.out.println("=== Graph ====================================");
-
-        for (Sensor sensor : jgrapht.vertexSet()) {
-            System.out.print("Sensor " + sensor + ": ");
-            System.out.print("angle = " + Math.toDegrees(sensor.getOrientation()));
-            System.out.println("");
+    // FIXME: Side effects
+    private void initGraphFactoryPanel(GraphFactory jgraphtFactory) {
+        if (graphFactoryPanel != null) {
+            remove(graphFactoryPanel);
         }
-        System.out.println("");
-
+        graphFactoryPanel = selectedGraphFactory.getControlPanel(this);
+        add(graphFactoryPanel);
     }
 
     private void resetJGraph(JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter, Set<Sensor> vertices) {
         if (jgraph != null) {
             remove(jgraph);
         }
-
         jgraph = createJGraph(jgraphAdapter);
         add(jgraph);
         positionSensorsOnJGraph(jgraphAdapter, vertices);
@@ -121,7 +131,7 @@ public class Main extends JApplet {
         Rectangle2D cellBounds = GraphConstants.getBounds(cellAttributes);
 
         double centerX = cellBounds.getCenterX();
-        double centerY = cellBounds.getCenterY();
+        double centerY = GRAPH_HEIGHT - cellBounds.getCenterY();
 
         sensor.setPosition(centerX, centerY);
     }
@@ -146,20 +156,15 @@ public class Main extends JApplet {
                     updateSensorPositionFromCell(jgraph.getModel(), (DefaultGraphCell) cellObject);
                 }
 
-                show(jgraphtFactory, jgraphtFactory.createGraph(vertices));
-                repaint();
+                showGraphWithDifferentGraphFactory(selectedGraphFactory);
             }
 
-            @Override
-            public void mouseClicked(MouseEvent event) {
-
-            }
         };
     }
 
     @SuppressWarnings("unchecked")
     private void positionSensorOnJgraph(JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter, Sensor sensor) {
-        DefaultGraphCell cell = jgraphAdapter.getVertexCell((Object)sensor);
+        DefaultGraphCell cell = jgraphAdapter.getVertexCell((Object) sensor);
 
         AttributeMap cellAttributes = cell.getAttributes();
         GraphConstants.setBounds(cellAttributes, SensorDrawingUtils.GetBoundsFromSensor(sensor));
@@ -169,27 +174,38 @@ public class Main extends JApplet {
         jgraphAdapter.edit(cellAttr, null, null, null);
     }
 
-    private void setupButtons() {
+    private void initRadioButtons() {
         Container c = getContentPane();
         c.setBackground(ColorTheme.Black);
         c.setLayout(new FlowLayout());
-        JButton omniButton = makeButton(" Show Omnidirectional Graph ");
 
-        omniButton.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                //TODO: Display the omni-graph
+        final JRadioButton proximityButton = new JRadioButton(" Show Omnidirectional Graph ");
+        final JRadioButton transmissionButton = new JRadioButton(" Show Directed Antennae Graph ");
+
+        proximityButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showGraphWithDifferentGraphFactory(new ProximityGraphFactory());
             }
         });
 
-        JButton directedButton = makeButton(" Show Directed Antennae Graph ");
-        directedButton.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                //TODO: Display the directed-graph
+        transmissionButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showGraphWithDifferentGraphFactory(new TransmissionGraphFactory());
             }
         });
 
-        c.add(omniButton);
-        c.add(directedButton);
+        ButtonGroup radioButtons = new ButtonGroup();
+        radioButtons.add(proximityButton);
+        radioButtons.add(transmissionButton);
+
+        JPanel radioPanel = new JPanel(new FlowLayout());
+        radioPanel.add(proximityButton);
+        radioPanel.add(transmissionButton);
+
+        proximityButton.setSelected(true);
+        c.add(radioPanel);
     }
 
     private JButton makeButton(String label) {
@@ -217,19 +233,21 @@ public class Main extends JApplet {
         sensors.add(new Sensor(new Point2D.Double(130, 40)));
         sensors.add(new Sensor(new Point2D.Double(130, 100)));
         sensors.add(new Sensor(new Point2D.Double(190, 100)));
-//        sensors.add(new Sensor(new Point2D.Double(10, 10)));
-//        sensors.add(new Sensor(new Point2D.Double(19, 10)));
-//        sensors.add(new Sensor(new Point2D.Double(57, 63)));
+        // sensors.add(new Sensor(new Point2D.Double(10, 10)));
+        // sensors.add(new Sensor(new Point2D.Double(19, 10)));
+        // sensors.add(new Sensor(new Point2D.Double(57, 63)));
         sensors.add(new Sensor(new Point2D.Double(494, 188)));
         sensors.add(new Sensor(new Point2D.Double(105, 347)));
-        sensors.add(new Sensor(new Point2D.Double(265, 656)));
+        // sensors.add(new Sensor(new Point2D.Double(265, 656)));
         sensors.add(new Sensor(new Point2D.Double(283, 243)));
         sensors.add(new Sensor(new Point2D.Double(249, 301)));
-        sensors.add(new Sensor(new Point2D.Double(373, 571)));
+        // sensors.add(new Sensor(new Point2D.Double(373, 571)));
+
+        sensors.add(new Sensor(new Point2D.Double(200, 700)));
+        sensors.add(new Sensor(new Point2D.Double(300, 700)));
 
         return sensors;
     }
-
 
     private ProximityGraph createTestProximityGraph() {
 
@@ -241,7 +259,8 @@ public class Main extends JApplet {
         Sensor b = new Sensor(new Point2D.Double(130, 100));
         Sensor c = new Sensor(new Point2D.Double(190, 100));
 
-        SimpleDirectedGraph<Sensor, SensorEdge> graph = new SimpleDirectedGraph<Sensor, SensorEdge>(new SensorEdgeFactory());
+        SimpleDirectedGraph<Sensor, SensorEdge> graph = new SimpleDirectedGraph<Sensor, SensorEdge>(
+                new SensorEdgeFactory());
         graph.addVertex(a);
         graph.addVertex(b);
         graph.addVertex(c);

@@ -68,19 +68,19 @@ public class Sensor {
     public String toString() {
         return Integer.toString(id);
     }
-    
+
     public int getID(){
-    	return id;
+        return id;
     }
-    
+
     public boolean equals(Sensor s){
-    	boolean result = false;
-    	if(this == s){
-    		result = true;
-    	} else if(id == s.getID()){
-    		result = true;
-    	}
-    	//I think checking against id is enough
-    	return result;
+        boolean result = false;
+        if(this == s){
+            result = true;
+        } else if(id == s.getID()){
+            result = true;
+        }
+        //I think checking against id is enough
+        return result;
     }
 }

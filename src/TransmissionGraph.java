@@ -1,7 +1,9 @@
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
+import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.alg.KruskalMinimumSpanningTree;
 import org.jgrapht.alg.StrongConnectivityInspector;
 import org.jgrapht.graph.SimpleDirectedGraph;
@@ -11,41 +13,24 @@ import org.jgrapht.traverse.BreadthFirstIterator;
 public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
     private static final long serialVersionUID = 1L;
 
-    // I think the sensors are all supposed to have the same range and angle so
-    // grabbing from one sensor will be fine
     private Double anglePhi;
     private Double range;
-    private SimpleGraph<Sensor, SensorEdge> minSpanTree;
-    private StrongConnectivityInspector<Sensor, SensorEdge> connectivityInsp = null;
 
     public TransmissionGraph(Set<Sensor> vertices) {
         super(new SensorEdgeFactory());
         this.anglePhi = Sensor.GetAngle();
         this.range = Sensor.GetRange();
-        minSpanTree = computeMST(vertices);
 
         for (Sensor vertex : vertices) {
             addVertex(vertex);
         }
 
-        orientAntennae(vertices);
+        List<Set<Sensor>> connectedSets = (new ConnectivityInspector<Sensor, SensorEdge>(new ProximityGraph(vertices)))
+                .connectedSets();
 
-        // connectivityInsp = new StrongConnectivityInspector<Sensor,
-        // SensorEdge>(this);
-        // if (!connectivityInsp.isStronglyConnected()) {
-        // System.out.println("Not strongly connected.");
-        // List<Set<Sensor>> mySets = connectivityInsp.stronglyConnectedSets();
-        // int count = 1;
-        // for (Set<Sensor> set : mySets) {
-        // System.out.println("Set #: " + count++);
-        // for (Sensor s : set) {
-        // System.out.println(s);
-        // }
-        // }
-        // } else {
-        // System.out.println("Seems to work!");
-        // }
-
+        for (Set<Sensor> connectedVertices : connectedSets) {
+            orientAntennae(connectedVertices);
+        }
     }
 
     private SimpleGraph<Sensor, SensorEdge> computeMST(Set<Sensor> vertices) {
@@ -66,6 +51,7 @@ public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
     }
 
     private void orientAntennae(Set<Sensor> vertices) {
+        SimpleGraph<Sensor, SensorEdge> minSpanTree = computeMST(vertices);
 
         Set<SensorEdge> matching = new HashSet<SensorEdge>(); // Note that it's
                                                               // possible for a
@@ -185,17 +171,15 @@ public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
 
                     // Orient them so that they see each other at the edge
                     // of their vision
-                    // source.setOrientation(angleFromSourceToDest + (anglePhi / 2));
-                    // destination.setOrientation(angleFromDestToSource + (anglePhi / 2));
-
-                     source.setOrientation(angleFromSourceToDest);
-                     destination.setOrientation(angleFromDestToSource);
+                    source.setOrientation(angleFromSourceToDest + (anglePhi / 2));
+                    destination.setOrientation(angleFromDestToSource + (anglePhi / 2));
 
                     // FIXME: This algorithm orients, then considers
                     // neighbours. It would be nice if we could consider
                     // neighbours
                     // and then orient.
                     for (Sensor neighbour : vertices) {
+
                         if (neighbour != null) {
                             if (!neighbour.equals(source) && !neighbour.equals(destination)) {
                                 if (source.getPosition().distance(neighbour.getPosition()) <= range) {
@@ -277,7 +261,6 @@ public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
                 }
             }
         }
-
     }
 
     /**
@@ -300,7 +283,6 @@ public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
             oppositeOverAdjacent = heightDiff / strideDiff;
         }
 
-
         double result = Math.atan(oppositeOverAdjacent);
 
         return correctAngleForQuandrant(heightDiff, strideDiff, result);
@@ -309,7 +291,6 @@ public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
     private double correctAngleForQuandrant(double heightDiff, double strideDiff, double angle) {
         boolean positiveY = heightDiff >= 0;
         boolean positiveX = strideDiff >= 0;
-
 
         if (positiveY) {
 
@@ -331,13 +312,13 @@ public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
                 // The dest must be in quadrant 4 and the result must be
                 // negative
                 // This will give us an angle between
-                angle += 2 * Math.PI;
+                angle = (3 * Math.PI / 2) - angle;
 
-            // Quadrant 3
+                // Quadrant 3
             } else {
                 // The dest must be in quadrant 3 and must be positive
                 // This will give us an angle between pi and 3pi/2
-                angle += Math.PI;
+                angle = Math.PI + (Math.PI / 2 - angle);
             }
         }
         return angle;
