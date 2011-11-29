@@ -2,6 +2,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,8 +18,14 @@ import javax.swing.ButtonGroup;
 import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.jgraph.JGraph;
 import org.jgraph.graph.AttributeMap;
@@ -61,6 +68,7 @@ public class Main extends JApplet {
         Sensor.SetAngle(3 * Math.PI / 2);
 
         initRadioButtons();
+        initRangeSpinner();
         initMouseAdapter();
 
         GraphFactory graphFactory = new ProximityGraphFactory();
@@ -71,15 +79,18 @@ public class Main extends JApplet {
 
     @Override
     public void paint(Graphics g) {
-        super.paint(g);
-
         Graphics jgraphGraphics = jgraph.getGraphics();
+        super.paint(g);
         selectedGraphFactory.paint(jgraphGraphics, vertices);
     }
 
     public void showGraphWithDifferentGraphFactory(GraphFactory jgraphtFactory) {
         showGraph(jgraphtFactory, jgraphtFactory.createGraph(vertices));
         repaint();
+    }
+
+    public void reset() {
+        showGraphWithDifferentGraphFactory(selectedGraphFactory);
     }
 
     // FIXME: Side effects
@@ -120,6 +131,7 @@ public class Main extends JApplet {
         jgraph.setDropEnabled(false);
         jgraph.setEditable(false);
         jgraph.setMoveBeyondGraphBounds(false);
+        jgraph.setBackground(null);
 
         return jgraph;
     }
@@ -247,6 +259,28 @@ public class Main extends JApplet {
         sensors.add(new Sensor(new Point2D.Double(300, 700)));
 
         return sensors;
+    }
+
+    private void initRangeSpinner() {
+
+        JLabel sensorRangeLabel = new JLabel("Sensor Range: ");
+
+        final SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(Sensor.GetRange(), 0, GRAPH_WIDTH, 1);
+        JSpinner rangeSpinner = new JSpinner(spinnerNumberModel);
+
+        spinnerNumberModel.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                Sensor.SetRange(spinnerNumberModel.getNumber().doubleValue());
+                reset();
+            }
+        });
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(0, 2));
+        panel.add(sensorRangeLabel);
+        panel.add(rangeSpinner);
+        this.getContentPane().add(panel);
     }
 
     private ProximityGraph createTestProximityGraph() {
