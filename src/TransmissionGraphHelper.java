@@ -20,7 +20,7 @@ import javax.swing.event.ChangeListener;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.StrongConnectivityInspector;
 
-public class TransmissionGraphFactory implements GraphFactory {
+public class TransmissionGraphHelper implements GraphFactory, GraphView {
 
     boolean stronglyConnected = false;
 
@@ -59,7 +59,6 @@ public class TransmissionGraphFactory implements GraphFactory {
 
         return new Arc2D.Double(x, y, width, height, start, extent, Arc2D.PIE);
     }
-
 
     @Override
     public JPanel getControlPanel(final Main main) {

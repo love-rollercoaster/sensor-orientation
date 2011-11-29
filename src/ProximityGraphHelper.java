@@ -9,7 +9,7 @@ import javax.swing.JPanel;
 import org.jgrapht.Graph;
 
 
-public class ProximityGraphFactory implements GraphFactory {
+public class ProximityGraphHelper implements GraphFactory, GraphView {
 
     @Override
     public Graph<Sensor, SensorEdge> createGraph(Set<Sensor> vertices) {

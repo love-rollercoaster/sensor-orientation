@@ -3,7 +3,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -11,18 +10,18 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
+import java.util.Stack;
 
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JApplet;
-import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
-import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -40,10 +39,10 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 // FIXME: Lots of side effects
 public class Main extends JApplet {
 
+    private static final long serialVersionUID = 3256444702936019250L;
     private static final int GRAPH_WIDTH = 900;
     private static final int GRAPH_HEIGHT = 900;
 
-    private static final long serialVersionUID = 3256444702936019250L;
     private static final Dimension DEFAULT_SIZE = new Dimension(GRAPH_WIDTH, GRAPH_HEIGHT);
     private static int sensorRange = 100;
 
@@ -52,6 +51,9 @@ public class Main extends JApplet {
     private MouseAdapter mouseAdapter;
     private GraphFactory selectedGraphFactory;
     private JPanel graphFactoryPanel;
+    private Random random = new Random();
+    private SpinnerNumberModel numberOfSensorsSpinnerModel;
+    private boolean drawSensorAntenna = true;
 
     public static void main(String[] args) {
         JGraphAdapterDemo applet = new JGraphAdapterDemo();
@@ -68,10 +70,11 @@ public class Main extends JApplet {
         Sensor.SetAngle(3 * Math.PI / 2);
 
         initRadioButtons();
-        initRangeSpinner();
+        initSpinners();
+        initDrawSensorAntennaCheckbox();
         initMouseAdapter();
 
-        GraphFactory graphFactory = new ProximityGraphFactory();
+        GraphFactory graphFactory = new ProximityGraphHelper();
         showGraph(graphFactory, graphFactory.createGraph(createTestSensors()));
 
         resize(DEFAULT_SIZE);
@@ -81,7 +84,11 @@ public class Main extends JApplet {
     public void paint(Graphics g) {
         Graphics jgraphGraphics = jgraph.getGraphics();
         super.paint(g);
-        selectedGraphFactory.paint(jgraphGraphics, vertices);
+
+        if (drawSensorAntenna) {
+            selectedGraphFactory.paint(jgraphGraphics, vertices);
+        }
+
     }
 
     public void showGraphWithDifferentGraphFactory(GraphFactory jgraphtFactory) {
@@ -93,18 +100,27 @@ public class Main extends JApplet {
         showGraphWithDifferentGraphFactory(selectedGraphFactory);
     }
 
-    // FIXME: Side effects
+    // FIXME: Hack
     public void showGraph(GraphFactory jgraphtFactory, Graph<Sensor, SensorEdge> jgrapht) {
+        showGraph(jgraphtFactory, jgrapht, false);
+    }
+
+    // FIXME: Side effects
+    private void showGraph(GraphFactory jgraphtFactory, Graph<Sensor, SensorEdge> jgrapht, boolean updateNumberOfSensorSpinnerModel) {
         this.vertices = jgrapht.vertexSet();
         this.selectedGraphFactory = jgraphtFactory;
         initGraphFactoryPanel(jgraphtFactory);
 
         JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter = (new JGraphConverter()).convertFromJGraphT(jgrapht);
         resetJGraph(jgraphAdapter, vertices);
+
+        if (updateNumberOfSensorSpinnerModel) {
+            numberOfSensorsSpinnerModel.setValue(vertices.size());
+        }
     }
 
     // FIXME: Side effects
-    private void initGraphFactoryPanel(GraphFactory jgraphtFactory) {
+    private void initGraphFactoryPanel(GraphView jgraphtFactory) {
         if (graphFactoryPanel != null) {
             remove(graphFactoryPanel);
         }
@@ -112,6 +128,7 @@ public class Main extends JApplet {
         add(graphFactoryPanel);
     }
 
+    // FIXME: Side effects
     private void resetJGraph(JGraphModelAdapter<Sensor, SensorEdge> jgraphAdapter, Set<Sensor> vertices) {
         if (jgraph != null) {
             remove(jgraph);
@@ -197,14 +214,14 @@ public class Main extends JApplet {
         proximityButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showGraphWithDifferentGraphFactory(new ProximityGraphFactory());
+                showGraphWithDifferentGraphFactory(new ProximityGraphHelper());
             }
         });
 
         transmissionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showGraphWithDifferentGraphFactory(new TransmissionGraphFactory());
+                showGraphWithDifferentGraphFactory(new TransmissionGraphHelper());
             }
         });
 
@@ -218,16 +235,6 @@ public class Main extends JApplet {
 
         proximityButton.setSelected(true);
         c.add(radioPanel);
-    }
-
-    private JButton makeButton(String label) {
-        JButton button = new JButton(label);
-        button.setBorder(BorderFactory.createLineBorder(ColorTheme.White, 1));
-        button.setBackground(ColorTheme.Black);
-        button.setForeground(ColorTheme.White);
-        button.setMargin(new Insets(10, 100, 10, 10));
-
-        return button;
     }
 
     private static void initFrame(JGraphAdapterDemo applet) {
@@ -261,10 +268,7 @@ public class Main extends JApplet {
         return sensors;
     }
 
-    private void initRangeSpinner() {
-
-        JLabel sensorRangeLabel = new JLabel("Sensor Range: ");
-
+    private JSpinner makeRangeSpinner() {
         final SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(Sensor.GetRange(), 0, GRAPH_WIDTH, 1);
         JSpinner rangeSpinner = new JSpinner(spinnerNumberModel);
 
@@ -276,10 +280,92 @@ public class Main extends JApplet {
             }
         });
 
+        return rangeSpinner;
+    }
+
+    private class NumberOfSensorsChangeListener implements ChangeListener {
+        private Stack<Sensor> sensorsStack = new Stack<Sensor>();
+        private final SpinnerNumberModel numberOfSensorsSpinnerModel;
+
+        public NumberOfSensorsChangeListener(SpinnerNumberModel numberOfSensorsSpinnerModel) {
+            this.numberOfSensorsSpinnerModel = numberOfSensorsSpinnerModel;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            int numberOfSensors = numberOfSensorsSpinnerModel.getNumber().intValue();
+            int sensorNumberDifference = numberOfSensors - sensorsStack.size();
+
+            if (sensorNumberDifference == 0) {
+                return;
+            } else if (sensorNumberDifference < 0) {
+                while (sensorNumberDifference++ < 0) {
+                    Sensor sensor = sensorsStack.pop();
+                    vertices = new HashSet<Sensor>(vertices);
+                    vertices.remove(sensor);
+                }
+            } else if (sensorNumberDifference > 0) {
+                while (sensorNumberDifference-- > 0) {
+                    Sensor sensor = makeSensorWithRandomPosition();
+                    sensorsStack.push(sensor);
+                    vertices = new HashSet<Sensor>(vertices);
+                    vertices.add(sensor);
+
+                }
+            }
+
+            showGraph(selectedGraphFactory, selectedGraphFactory.createGraph(vertices));
+        }
+
+        private Sensor makeSensorWithRandomPosition() {
+            double x = random.nextInt((int) (GRAPH_WIDTH - SensorDrawingUtils.GetSensorScreenWidth()));
+            double y = random.nextInt((int) (GRAPH_WIDTH - SensorDrawingUtils.GetSensorScreenWidth()));
+            return new Sensor(new Point2D.Double(x, y));
+        }
+    }
+
+    private void removeSensorFromVertices(Sensor sensor) {
+        vertices.remove(sensor);
+    }
+
+    private void addSensorToVertices(Sensor sensor) {
+        vertices.add(sensor);
+    }
+
+    private JSpinner makeNumberOfSensorSpinner() {
+        this.numberOfSensorsSpinnerModel = new SpinnerNumberModel(0, 0, 100, 1);
+        JSpinner numberOfSensorsSpinner = new JSpinner(numberOfSensorsSpinnerModel);
+        numberOfSensorsSpinnerModel.addChangeListener(new NumberOfSensorsChangeListener(numberOfSensorsSpinnerModel));
+
+        return numberOfSensorsSpinner;
+    }
+
+    private void updateNumberOfSensorSpinner(JSpinner numberOfSensorsSpinner, int numberOfSensors) {
+        numberOfSensorsSpinnerModel.setValue(numberOfSensors);
+    }
+
+    private void initDrawSensorAntennaCheckbox() {
+        final JCheckBox drawSensorAntennaCheckbox = new JCheckBox("Draw sensor antenna");
+        drawSensorAntennaCheckbox.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                drawSensorAntenna = drawSensorAntennaCheckbox.isSelected();
+            }
+        });
+        this.getContentPane().add(drawSensorAntennaCheckbox);
+    }
+
+    private void initSpinners() {
+        JLabel sensorRangeLabel = new JLabel("Sensor Range: ");
+        JLabel numberOfSensorLabel = new JLabel("Sensor #: ");
         JPanel panel = new JPanel();
+
         panel.setLayout(new GridLayout(0, 2));
         panel.add(sensorRangeLabel);
-        panel.add(rangeSpinner);
+        panel.add(makeRangeSpinner());
+        panel.add(numberOfSensorLabel);
+        panel.add(makeNumberOfSensorSpinner());
         this.getContentPane().add(panel);
     }
 
