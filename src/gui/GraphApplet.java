@@ -8,6 +8,8 @@ import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -15,6 +17,8 @@ import java.awt.geom.Rectangle2D;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -46,7 +50,8 @@ import org.jgrapht.Graph;
 import org.jgrapht.demo.JGraphAdapterDemo;
 import org.jgrapht.ext.JGraphModelAdapter;
 
-import algorithms.Algorithms;
+import test.TestResult;
+import test.TestRunner;
 import algorithms.UnconnectedGraphException;
 
 // FIXME: Lots of side effects
@@ -59,11 +64,11 @@ public class GraphApplet extends JApplet {
     private static final int MAX_NUMBER_OF_SENSORS = 1000;
     private static final int MAX_RANGE = 10000;
     private static final int INITIAL_NUMBER_OF_SENSORS = 60;
+    private static final String DEFAULT_LOG_FILEPATH = "comp3203_as02_log_" + (new Date()).getTime() + ".log";
 
     private static final Dimension DEFAULT_SIZE = new Dimension(800, 600);
     private static int sensorRange = 100;
     private static JFrame FRAME = new JFrame();
-
 
     private JGraph jgraph;
     private Set<Sensor> vertices;
@@ -75,6 +80,7 @@ public class GraphApplet extends JApplet {
     private JCheckBox drawSensorAntennaCheckbox;
 
     private JPanel topPanel = new JPanel();
+    private TestResultHistoryFrame testResultHistoryFrame = new TestResultHistoryFrame();
 
     public static void main(String[] args) {
         JGraphAdapterDemo applet = new JGraphAdapterDemo();
@@ -95,6 +101,8 @@ public class GraphApplet extends JApplet {
         topPanel.setLayout(new WrapLayout());
         contentPane.add(topPanel, BorderLayout.PAGE_START);
 
+        testResultHistoryFrame.setVisible(true);
+
         initRadioButtons();
         initSpinners();
         initDrawSensorAntennaCheckbox();
@@ -105,7 +113,8 @@ public class GraphApplet extends JApplet {
         showGraph(graphFactory, graphFactory.createGraph(createTestSensors()));
 
         numberOfSensorsSpinnerModel.setValue(vertices.size());
-        numberOfSensorsSpinnerModel.addChangeListener(new NumberOfSensorsChangeListener(numberOfSensorsSpinnerModel, vertices));
+        numberOfSensorsSpinnerModel.addChangeListener(new NumberOfSensorsChangeListener(numberOfSensorsSpinnerModel,
+                vertices));
 
         this.setPreferredSize(DEFAULT_SIZE);
     }
@@ -119,18 +128,21 @@ public class GraphApplet extends JApplet {
 
                 try {
                     try {
-                        Algorithms.RunTests(vertices, new PrintStream(new FileOutputStream("../doc/log.txt", true)));
+                        PrintStream logWriter = new PrintStream(new FileOutputStream(DEFAULT_LOG_FILEPATH, true));
+
+                        testResultHistoryFrame.setVisible(true);
+                        TestResult result = (new TestRunner()).run(vertices, logWriter);
+
+                        testResultHistoryFrame.addTestResult(result);
+                        testResultHistoryFrame.logAverages(logWriter);
+
                     } catch (FileNotFoundException e2) {
-                        // TODO Auto-generated catch block
-                        e2.printStackTrace();
+                        JOptionPane.showMessageDialog(FRAME, "Invalid log filepath.", "Error",
+                                JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (UnconnectedGraphException e1) {
-                    JOptionPane.showMessageDialog(FRAME,
-                            "Graph must be strongly connected to run tests.\n" +
-                            "Reorganize the sensors and then try again.",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-
+                    JOptionPane.showMessageDialog(FRAME, "Graph must be strongly connected to run tests.\n"
+                            + "Reorganize the sensors and then try again.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -202,6 +214,33 @@ public class GraphApplet extends JApplet {
             remove(jgraph);
         }
         jgraph = createJGraph(jgraphAdapter);
+
+        jgraph.addComponentListener(new ComponentListener() {
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void componentResized(ComponentEvent e) {
+                reset();
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
 
         positionSensorsOnJGraph(jgraphAdapter, vertices);
     }
@@ -316,15 +355,15 @@ public class GraphApplet extends JApplet {
 
     private Set<Sensor> createTestSensors() {
         Set<Sensor> sensors = new HashSet<Sensor>();
-//        sensors.add(new Sensor(new Point2D.Double(130, 40)));
-//        sensors.add(new Sensor(new Point2D.Double(130, 100)));
-//        sensors.add(new Sensor(new Point2D.Double(190, 100)));
-//        sensors.add(new Sensor(new Point2D.Double(494, 188)));
-//        sensors.add(new Sensor(new Point2D.Double(105, 347)));
-//        sensors.add(new Sensor(new Point2D.Double(283, 243)));
-//        sensors.add(new Sensor(new Point2D.Double(249, 301)));
-//        sensors.add(new Sensor(new Point2D.Double(200, 700)));
-//        sensors.add(new Sensor(new Point2D.Double(300, 700)));
+        // sensors.add(new Sensor(new Point2D.Double(130, 40)));
+        // sensors.add(new Sensor(new Point2D.Double(130, 100)));
+        // sensors.add(new Sensor(new Point2D.Double(190, 100)));
+        // sensors.add(new Sensor(new Point2D.Double(494, 188)));
+        // sensors.add(new Sensor(new Point2D.Double(105, 347)));
+        // sensors.add(new Sensor(new Point2D.Double(283, 243)));
+        // sensors.add(new Sensor(new Point2D.Double(249, 301)));
+        // sensors.add(new Sensor(new Point2D.Double(200, 700)));
+        // sensors.add(new Sensor(new Point2D.Double(300, 700)));
 
         return sensors;
     }
@@ -388,7 +427,7 @@ public class GraphApplet extends JApplet {
             double maxX = getWidth() - SensorDrawingUtils.GetSensorScreenWidth();
 
             double x = random.nextInt((int) maxX);
-            double y = random.nextInt((int) ((maxY+1) - minY)) + minY;
+            double y = random.nextInt((int) ((maxY + 1) - minY)) + minY;
 
             return new Sensor(SensorDrawingUtils.ConvertCoordinateSystem(new Point2D.Double(x, y)));
         }
