@@ -151,8 +151,11 @@ public class Algorithms {
         }
 
         for(Set<Sensor> sensorSet : powerSet){
-            Sensor source = sensorSet.iterator().next();
-            Sensor destination = sensorSet.iterator().next();
+            Iterator<Sensor> sensorIterator = sensorSet.iterator();
+
+            Sensor source = sensorIterator.next();
+            Sensor destination = sensorIterator.next();
+
             printWriter.println("Sensors: Source = " + source + " Destination = " + destination);
             double shortestPathResult = transShortestPaths.shortestDistance(source, destination) / proxShortestPaths.shortestDistance(source, destination);
             double routeLengthResult = ComputeLengthOfRoute(transShortestPaths.getShortestPath(source, destination)) / ComputeLengthOfRoute(proxShortestPaths.getShortestPath(source, destination));
