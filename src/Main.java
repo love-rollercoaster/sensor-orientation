@@ -55,6 +55,9 @@ public class Main extends JApplet {
     private SpinnerNumberModel numberOfSensorsSpinnerModel;
     private boolean drawSensorAntenna = true;
 
+
+
+
     public static void main(String[] args) {
         JGraphAdapterDemo applet = new JGraphAdapterDemo();
         applet.init();
@@ -77,18 +80,22 @@ public class Main extends JApplet {
         GraphFactory graphFactory = new ProximityGraphHelper();
         showGraph(graphFactory, graphFactory.createGraph(createTestSensors()));
 
+        numberOfSensorsSpinnerModel.setValue(vertices.size());
+        numberOfSensorsSpinnerModel.addChangeListener(new NumberOfSensorsChangeListener(numberOfSensorsSpinnerModel,
+                vertices));
+
         resize(DEFAULT_SIZE);
     }
 
     @Override
     public void paint(Graphics g) {
-        Graphics jgraphGraphics = jgraph.getGraphics();
-        super.paint(g);
+        Graphics jgraphGraphics = jgraph.getOffgraphics();
 
         if (drawSensorAntenna) {
             selectedGraphFactory.paint(jgraphGraphics, vertices);
         }
 
+        super.paint(g);
     }
 
     public void showGraphWithDifferentGraphFactory(GraphFactory jgraphtFactory) {
@@ -102,11 +109,12 @@ public class Main extends JApplet {
 
     // FIXME: Hack
     public void showGraph(GraphFactory jgraphtFactory, Graph<Sensor, SensorEdge> jgrapht) {
-        showGraph(jgraphtFactory, jgrapht, false);
+        showGraph(jgraphtFactory, jgrapht, true);
     }
 
     // FIXME: Side effects
-    private void showGraph(GraphFactory jgraphtFactory, Graph<Sensor, SensorEdge> jgrapht, boolean updateNumberOfSensorSpinnerModel) {
+    private void showGraph(GraphFactory jgraphtFactory, Graph<Sensor, SensorEdge> jgrapht,
+            boolean updateNumberOfSensorSpinnerModel) {
         this.vertices = jgrapht.vertexSet();
         this.selectedGraphFactory = jgraphtFactory;
         initGraphFactoryPanel(jgraphtFactory);
@@ -284,11 +292,14 @@ public class Main extends JApplet {
     }
 
     private class NumberOfSensorsChangeListener implements ChangeListener {
-        private Stack<Sensor> sensorsStack = new Stack<Sensor>();
+        private final Stack<Sensor> sensorsStack = new Stack<Sensor>();
         private final SpinnerNumberModel numberOfSensorsSpinnerModel;
 
-        public NumberOfSensorsChangeListener(SpinnerNumberModel numberOfSensorsSpinnerModel) {
+        public NumberOfSensorsChangeListener(SpinnerNumberModel numberOfSensorsSpinnerModel, Set<Sensor> vertices) {
             this.numberOfSensorsSpinnerModel = numberOfSensorsSpinnerModel;
+            for (Sensor sensor : vertices) {
+                sensorsStack.push(sensor);
+            }
         }
 
         @Override
@@ -301,6 +312,8 @@ public class Main extends JApplet {
             } else if (sensorNumberDifference < 0) {
                 while (sensorNumberDifference++ < 0) {
                     Sensor sensor = sensorsStack.pop();
+                    System.out.println("Stack: " + sensor);
+                    System.out.println("  Set: " + vertices + "\n");
                     vertices = new HashSet<Sensor>(vertices);
                     vertices.remove(sensor);
                 }
@@ -310,11 +323,10 @@ public class Main extends JApplet {
                     sensorsStack.push(sensor);
                     vertices = new HashSet<Sensor>(vertices);
                     vertices.add(sensor);
-
                 }
             }
 
-            showGraph(selectedGraphFactory, selectedGraphFactory.createGraph(vertices));
+            showGraph(selectedGraphFactory, selectedGraphFactory.createGraph(vertices), false);
         }
 
         private Sensor makeSensorWithRandomPosition() {
@@ -324,24 +336,11 @@ public class Main extends JApplet {
         }
     }
 
-    private void removeSensorFromVertices(Sensor sensor) {
-        vertices.remove(sensor);
-    }
-
-    private void addSensorToVertices(Sensor sensor) {
-        vertices.add(sensor);
-    }
-
     private JSpinner makeNumberOfSensorSpinner() {
         this.numberOfSensorsSpinnerModel = new SpinnerNumberModel(0, 0, 100, 1);
         JSpinner numberOfSensorsSpinner = new JSpinner(numberOfSensorsSpinnerModel);
-        numberOfSensorsSpinnerModel.addChangeListener(new NumberOfSensorsChangeListener(numberOfSensorsSpinnerModel));
 
         return numberOfSensorsSpinner;
-    }
-
-    private void updateNumberOfSensorSpinner(JSpinner numberOfSensorsSpinner, int numberOfSensors) {
-        numberOfSensorsSpinnerModel.setValue(numberOfSensors);
     }
 
     private void initDrawSensorAntennaCheckbox() {
@@ -370,7 +369,6 @@ public class Main extends JApplet {
     }
 
     private ProximityGraph createTestProximityGraph() {
-
         return new ProximityGraph(createTestSensors());
     }
 
