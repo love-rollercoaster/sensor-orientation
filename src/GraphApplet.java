@@ -1,6 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -11,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -18,6 +20,7 @@ import java.util.Stack;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JApplet;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -50,6 +53,8 @@ public class GraphApplet extends JApplet {
 
     private static final Dimension DEFAULT_SIZE = new Dimension(800, 600);
     private static int sensorRange = 100;
+    private static JFrame FRAME = new JFrame();
+
 
     private JGraph jgraph;
     private Set<Sensor> vertices;
@@ -66,7 +71,6 @@ public class GraphApplet extends JApplet {
         JGraphAdapterDemo applet = new JGraphAdapterDemo();
         applet.init();
         applet.setBackground(ColorTheme.Black);
-
         initFrame(applet);
     }
 
@@ -87,6 +91,25 @@ public class GraphApplet extends JApplet {
         initDrawSensorAntennaCheckbox();
         initMouseAdapter();
 
+        JButton runTestButton = new JButton("Run Test");
+        runTestButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                try {
+                    Algorithms.RunTests(vertices, new PrintWriter(System.out));
+                } catch (UnconnectedGraphException e1) {
+                    Dialog dialog = new Dialog(FRAME, "Error", true);
+                    dialog.setVisible(true);
+                }
+
+            }
+        });
+        topPanel.add(runTestButton);
+
+
+
         GraphFactory graphFactory = new ProximityGraphHelper();
         showGraph(graphFactory, graphFactory.createGraph(createTestSensors()));
 
@@ -101,7 +124,6 @@ public class GraphApplet extends JApplet {
 
         if (!vertices.isEmpty()) {
             Graphics jgraphGraphics = jgraph.getOffgraphics();
-
             if (drawSensorAntennaCheckbox.isSelected()) {
                 selectedGraphFactory.paint(jgraphGraphics, vertices);
             }
