@@ -1,7 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -24,6 +23,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
@@ -50,6 +50,7 @@ public class GraphApplet extends JApplet {
 
     private static final int MAX_NUMBER_OF_SENSORS = 1000;
     private static final int MAX_RANGE = 10000;
+    private static final int INITIAL_NUMBER_OF_SENSORS = 60;
 
     private static final Dimension DEFAULT_SIZE = new Dimension(800, 600);
     private static int sensorRange = 100;
@@ -98,10 +99,14 @@ public class GraphApplet extends JApplet {
             public void actionPerformed(ActionEvent e) {
 
                 try {
-                    Algorithms.RunTests(vertices, new PrintWriter(System.out));
+                    Algorithms.RunTests(vertices, System.out);
                 } catch (UnconnectedGraphException e1) {
-                    Dialog dialog = new Dialog(FRAME, "Error", true);
-                    dialog.setVisible(true);
+                    JOptionPane.showMessageDialog(FRAME,
+                            "Graph must be strongly connected to run tests.\n" +
+                            "Reorganize the sensors and then try again.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+
                 }
 
             }
@@ -198,7 +203,6 @@ public class GraphApplet extends JApplet {
         jgraph.setEditable(false);
         jgraph.setMoveBeyondGraphBounds(false);
         jgraph.setBackground(null);
-        jgraph.setBorder(new LineBorder(Color.red));
 
         getContentPane().add(jgraph, BorderLayout.CENTER);
         getContentPane().doLayout();
