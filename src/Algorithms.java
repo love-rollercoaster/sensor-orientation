@@ -7,6 +7,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.FloydWarshallShortestPaths;
 import org.jgrapht.alg.KruskalMinimumSpanningTree;
+import org.jgrapht.alg.StrongConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.traverse.BreadthFirstIterator;
 
@@ -124,16 +125,30 @@ public class Algorithms {
     	return result;
     }
     
-    public TestResult RunTests(Set<Sensor> vertices, PrintWriter printWriter){
+    public static boolean IsStronglyConnected(TransmissionGraph graph) {
+        StrongConnectivityInspector<Sensor, SensorEdge> connectivityInspector = new StrongConnectivityInspector<Sensor, SensorEdge>(graph);
+        return connectivityInspector.isStronglyConnected();
+    }    
+    
+    public TestResult RunTests(Set<Sensor> vertices, PrintWriter printWriter) throws UnconnectedGraphException{
      	
     	ProximityGraph proxGraph = new ProximityGraph(vertices);
     	TransmissionGraph transGraph = new TransmissionGraph(vertices);
+    	
+    	if(!IsStronglyConnected(transGraph)){
+    		throw new UnconnectedGraphException();
+    	}
     	FloydWarshallShortestPaths<Sensor, SensorEdge> proxShortestPaths = new FloydWarshallShortestPaths<Sensor, SensorEdge>(proxGraph);
     	FloydWarshallShortestPaths<Sensor, SensorEdge> transShortestPaths = new FloydWarshallShortestPaths<Sensor, SensorEdge>(transGraph);
     	Set<Set<Sensor>> powerSet = makeVerticesPowerSet(vertices);
     	
     	double shortestPathRatio = 0;
     	double routeLengthRatio = 0;
+    	
+    	printWriter.println("Running tests on sensors:");
+    	for(Sensor s : vertices){
+    		printWriter.println(s);	
+    	}
     	
     	for(Set<Sensor> sensorSet : powerSet){
     		Sensor source = sensorSet.iterator().next();

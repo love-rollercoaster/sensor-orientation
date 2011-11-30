@@ -1,10 +1,6 @@
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Shape;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Point2D;
 import java.util.Set;
@@ -12,13 +8,11 @@ import java.util.Set;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
-import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.jgrapht.Graph;
-import org.jgrapht.alg.StrongConnectivityInspector;
 
 public class TransmissionGraphHelper implements GraphFactory, GraphView {
 
@@ -27,7 +21,7 @@ public class TransmissionGraphHelper implements GraphFactory, GraphView {
     @Override
     public Graph<Sensor, SensorEdge> createGraph(Set<Sensor> vertices) {
         TransmissionGraph graph = new TransmissionGraph(vertices);
-        this.stronglyConnected = isStronglyConnected(graph);
+        this.stronglyConnected = Algorithms.IsStronglyConnected(graph);
         return graph;
     }
 
@@ -36,11 +30,6 @@ public class TransmissionGraphHelper implements GraphFactory, GraphView {
         for (Sensor sensor : vertices) {
             SensorDrawingUtils.PaintSensorAntenna(jgraphGraphics, getDirectionalAntennaeShape(sensor));
         }
-    }
-
-    private boolean isStronglyConnected(TransmissionGraph graph) {
-        StrongConnectivityInspector<Sensor, SensorEdge> connectivityInspector = new StrongConnectivityInspector<Sensor, SensorEdge>(graph);
-        return connectivityInspector.isStronglyConnected();
     }
 
     private static Shape getDirectionalAntennaeShape(Sensor sensor) {
