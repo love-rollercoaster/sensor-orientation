@@ -42,11 +42,6 @@ public class JGraphConverter {
     private AttributeMap createDefaultVertexAttributes(boolean directedGraph) {
         AttributeMap map = new AttributeMap();
 
-        if (directedGraph) {
-            // TODO: Try to get an arc drawn that radiates angle/2 on either
-            // side of orientation angle of each sensor in graph
-        }
-
         GraphConstants.setForeground(map, ColorTheme.Black);
         GraphConstants.setLineColor(map, ColorTheme.White);
         GraphConstants.setBackground(map, ColorTheme.White);
