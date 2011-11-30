@@ -1,3 +1,5 @@
+package network;
+
 import org.jgrapht.EdgeFactory;
 
 

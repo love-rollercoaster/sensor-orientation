@@ -1,3 +1,5 @@
+package gui;
+
 import java.awt.Graphics;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
@@ -5,6 +7,10 @@ import java.awt.geom.Point2D;
 import java.util.Set;
 
 import javax.swing.JPanel;
+
+import network.ProximityGraph;
+import network.Sensor;
+import network.SensorEdge;
 
 import org.jgrapht.Graph;
 

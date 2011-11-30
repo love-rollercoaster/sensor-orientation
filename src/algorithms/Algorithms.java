@@ -1,3 +1,5 @@
+package algorithms;
+
 import java.io.PrintStream;
 import java.util.Date;
 import java.util.HashSet;
@@ -6,6 +8,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import network.ProximityGraph;
+import network.Sensor;
+import network.SensorEdge;
+import network.SensorEdgeFactory;
+import network.TransmissionGraph;
+
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.FloydWarshallShortestPaths;
@@ -13,6 +21,7 @@ import org.jgrapht.alg.KruskalMinimumSpanningTree;
 import org.jgrapht.alg.StrongConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.traverse.BreadthFirstIterator;
+
 
 public class Algorithms {
 

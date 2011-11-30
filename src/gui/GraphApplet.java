@@ -1,3 +1,5 @@
+package gui;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -32,6 +34,9 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import network.Sensor;
+import network.SensorEdge;
+
 import org.jgraph.JGraph;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultGraphCell;
@@ -40,6 +45,9 @@ import org.jgraph.graph.GraphModel;
 import org.jgrapht.Graph;
 import org.jgrapht.demo.JGraphAdapterDemo;
 import org.jgrapht.ext.JGraphModelAdapter;
+
+import algorithms.Algorithms;
+import algorithms.UnconnectedGraphException;
 
 // FIXME: Lots of side effects
 @SuppressWarnings("serial")
@@ -110,15 +118,12 @@ public class GraphApplet extends JApplet {
             public void actionPerformed(ActionEvent e) {
 
                 try {
-
-
                     try {
                         Algorithms.RunTests(vertices, new PrintStream(new FileOutputStream("../doc/log.txt", true)));
                     } catch (FileNotFoundException e2) {
                         // TODO Auto-generated catch block
                         e2.printStackTrace();
                     }
-
                 } catch (UnconnectedGraphException e1) {
                     JOptionPane.showMessageDialog(FRAME,
                             "Graph must be strongly connected to run tests.\n" +
@@ -127,7 +132,6 @@ public class GraphApplet extends JApplet {
                             JOptionPane.ERROR_MESSAGE);
 
                 }
-
             }
         });
         topPanel.add(runTestButton);
