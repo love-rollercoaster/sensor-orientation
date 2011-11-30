@@ -1,14 +1,9 @@
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.jgrapht.alg.ConnectivityInspector;
-import org.jgrapht.alg.KruskalMinimumSpanningTree;
-import org.jgrapht.alg.StrongConnectivityInspector;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.graph.SimpleGraph;
-import org.jgrapht.traverse.BreadthFirstIterator;
 
 public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
     private static final long serialVersionUID = 1L;
@@ -184,15 +179,7 @@ public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
     private double angleBetweenTwoSensors(Sensor to, Sensor from) {
         double heightDiff = to.getPosition().getY() - from.getPosition().getY();
         double strideDiff = to.getPosition().getX() - from.getPosition().getX();
-
-        double oppositeOverAdjacent;
-        if (heightDiff < 0) {
-            oppositeOverAdjacent = strideDiff / heightDiff;
-        } else {
-            oppositeOverAdjacent = heightDiff / strideDiff;
-        }
-
-        double result = Math.atan(oppositeOverAdjacent);
+        double result = Math.atan(heightDiff / strideDiff);
 
         return correctAngleForQuandrant(heightDiff, strideDiff, result);
     }
@@ -221,13 +208,13 @@ public class TransmissionGraph extends SimpleDirectedGraph<Sensor, SensorEdge> {
                 // The dest must be in quadrant 4 and the result must be
                 // negative
                 // This will give us an angle between
-                angle = (3 * Math.PI / 2) - angle;
+                angle += 2 * Math.PI;
 
                 // Quadrant 3
             } else {
                 // The dest must be in quadrant 3 and must be positive
                 // This will give us an angle between pi and 3pi/2
-                angle = Math.PI + (Math.PI / 2 - angle);
+                angle += Math.PI;
             }
         }
         return angle;
