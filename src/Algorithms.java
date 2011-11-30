@@ -2,6 +2,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.jgrapht.Graph;
+import org.jgrapht.alg.FloydWarshallShortestPaths;
 import org.jgrapht.alg.KruskalMinimumSpanningTree;
 import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.traverse.BreadthFirstIterator;
@@ -106,6 +108,18 @@ public class Algorithms {
         }
 
         return matching;
+    }
+    
+    public static double ComputeNetworkDiameter(Graph<Set<Sensor>, Set<SensorEdge>> graphToAnalyze){
+    	return (new FloydWarshallShortestPaths<Set<Sensor>, Set<SensorEdge>>(graphToAnalyze)).getDiameter(); 
+    }
+    
+    public static double ComputeLengthOfRoute(Set<SensorEdge> path){
+    	double result = 0;
+    	for(SensorEdge e : path){
+    		result += e.getSource().getPosition().distance(e.getDestination().getPosition());
+    	}
+    	return result;
     }
 
 }
