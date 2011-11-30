@@ -113,7 +113,7 @@ public class GraphApplet extends JApplet {
 
 
                     try {
-                        Algorithms.RunTests(vertices, new PrintStream(new FileOutputStream("/tmp/baconsauce.txt", true)));
+                        Algorithms.RunTests(vertices, new PrintStream(new FileOutputStream("../doc/log.txt", true)));
                     } catch (FileNotFoundException e2) {
                         // TODO Auto-generated catch block
                         e2.printStackTrace();
@@ -361,8 +361,6 @@ public class GraphApplet extends JApplet {
             } else if (sensorNumberDifference < 0) {
                 while (sensorNumberDifference++ < 0) {
                     Sensor sensor = sensorsStack.pop();
-                    System.out.println("Stack: " + sensor);
-                    System.out.println("  Set: " + vertices + "\n");
                     vertices = new HashSet<Sensor>(vertices);
                     vertices.remove(sensor);
                 }

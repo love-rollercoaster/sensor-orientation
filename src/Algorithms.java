@@ -179,10 +179,12 @@ public class Algorithms {
         double shortestPathRatio = 0;
         double routeLengthRatio = 0;
 
+        printWriter.println();
         printWriter.println("==== Running tests on sensors [" + new Date() + "] ====================");
 
         printWriter.println("Sensor Range: " + Sensor.GetRange());
         printWriter.println("Sector Angle: " + Math.toDegrees(Sensor.GetAngle()));
+        printWriter.println();
 
         for (Sensor s : vertices) {
             printWriter.print("Sensor " + s);
@@ -197,6 +199,7 @@ public class Algorithms {
             Sensor destination = sensorIterator.next();
 
             printWriter.println("Sensors: Source = " + source + " Destination = " + destination);
+            printWriter.println();
             double shortestPathResult = transShortestPaths.shortestDistance(source, destination)
                     / proxShortestPaths.shortestDistance(source, destination);
             double routeLengthResult = ComputeLengthOfRoute(transShortestPaths.getShortestPath(source, destination))
@@ -209,6 +212,7 @@ public class Algorithms {
 
         shortestPathRatio /= powerSet.size();
         routeLengthRatio /= powerSet.size();
+        printWriter.println();
         printWriter.println("Average Shortest Path Ratio: " + shortestPathRatio);
         printWriter.println("Average Route Length Ratio: " + routeLengthRatio);
 
