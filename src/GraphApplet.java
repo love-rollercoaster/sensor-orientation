@@ -1,5 +1,4 @@
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -11,7 +10,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.PrintWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -28,7 +29,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -91,7 +91,18 @@ public class GraphApplet extends JApplet {
         initSpinners();
         initDrawSensorAntennaCheckbox();
         initMouseAdapter();
+        initRunTestButton();
 
+        GraphFactory graphFactory = new ProximityGraphHelper();
+        showGraph(graphFactory, graphFactory.createGraph(createTestSensors()));
+
+        numberOfSensorsSpinnerModel.setValue(vertices.size());
+        numberOfSensorsSpinnerModel.addChangeListener(new NumberOfSensorsChangeListener(numberOfSensorsSpinnerModel, vertices));
+
+        this.setPreferredSize(DEFAULT_SIZE);
+    }
+
+    private void initRunTestButton() {
         JButton runTestButton = new JButton("Run Test");
         runTestButton.addActionListener(new ActionListener() {
 
@@ -99,7 +110,15 @@ public class GraphApplet extends JApplet {
             public void actionPerformed(ActionEvent e) {
 
                 try {
-                    Algorithms.RunTests(vertices, System.out);
+
+
+                    try {
+                        Algorithms.RunTests(vertices, new PrintStream(new FileOutputStream("/tmp/baconsauce.txt", true)));
+                    } catch (FileNotFoundException e2) {
+                        // TODO Auto-generated catch block
+                        e2.printStackTrace();
+                    }
+
                 } catch (UnconnectedGraphException e1) {
                     JOptionPane.showMessageDialog(FRAME,
                             "Graph must be strongly connected to run tests.\n" +
@@ -112,16 +131,6 @@ public class GraphApplet extends JApplet {
             }
         });
         topPanel.add(runTestButton);
-
-
-
-        GraphFactory graphFactory = new ProximityGraphHelper();
-        showGraph(graphFactory, graphFactory.createGraph(createTestSensors()));
-
-        numberOfSensorsSpinnerModel.setValue(vertices.size());
-        numberOfSensorsSpinnerModel.addChangeListener(new NumberOfSensorsChangeListener(numberOfSensorsSpinnerModel, vertices));
-
-        this.setPreferredSize(DEFAULT_SIZE);
     }
 
     @Override

@@ -1,4 +1,5 @@
 import java.io.PrintStream;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -178,9 +179,15 @@ public class Algorithms {
         double shortestPathRatio = 0;
         double routeLengthRatio = 0;
 
-        printWriter.println("Running tests on sensors:");
+        printWriter.println("==== Running tests on sensors [" + new Date() + "] ====================");
+
+        printWriter.println("Sensor Range: " + Sensor.GetRange());
+        printWriter.println("Sector Angle: " + Math.toDegrees(Sensor.GetAngle()));
+
         for (Sensor s : vertices) {
-            printWriter.println(s);
+            printWriter.print("Sensor " + s);
+            printWriter.print(" [orientation: " + Math.toDegrees(s.getOrientation()));
+            printWriter.println(" , position: (" + s.getPosition().getX() + ", " + s.getPosition().getY() + ")]");
         }
 
         for (Set<Sensor> sensorSet : powerSet) {
