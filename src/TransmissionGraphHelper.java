@@ -50,7 +50,7 @@ public class TransmissionGraphHelper implements GraphFactory, GraphView {
     }
 
     @Override
-    public JPanel getControlPanel(final Main main) {
+    public JPanel getControlPanel(final GraphApplet main) {
 
         JLabel sensorAngleLabel = new JLabel("Sensor Angle: ");
         JLabel stronglyConnectedLabel = new JLabel("Strongly Connected: ");

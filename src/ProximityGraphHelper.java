@@ -33,7 +33,7 @@ public class ProximityGraphHelper implements GraphFactory, GraphView {
     }
 
     @Override
-    public JPanel getControlPanel(Main main) {
+    public JPanel getControlPanel(GraphApplet main) {
         return new JPanel();
     }
 

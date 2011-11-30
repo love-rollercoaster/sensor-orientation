@@ -32,16 +32,16 @@
       <operations public="true" package="false" protected="false" private="false"/>    
     </display>  
   </class>  
-  <class id="5" corner="BOTTOM_RIGHT" language="java" name="Main" project="as02" file="/as02/src/Main.java" 
-    binary="false">    
+  <class id="5" corner="BOTTOM_RIGHT" language="java" name="GraphApplet" project="as02" 
+    file="/as02/src/GraphApplet.java" binary="false">    
     <position height="148" width="304" x="2768" y="37"/>    
     <display autosize="true" package="false" initial-value="false" signature="true" visibility="true">      
       <attributes public="true" package="false" protected="false" private="false"/>      
       <operations public="true" package="false" protected="false" private="false"/>    
     </display>  
   </class>  
-  <class id="6" corner="BOTTOM_RIGHT" language="java" name="Main.NumberOfSensorsChangeListener" project="as02" 
-    file="/as02/src/Main.java" binary="false">    
+  <class id="6" corner="BOTTOM_RIGHT" language="java" name="GraphApplet.NumberOfSensorsChangeListener" project="as02" 
+    file="/as02/src/GraphApplet.java" binary="false">    
     <position height="-1" width="-1" x="2919" y="265"/>    
     <display autosize="true" package="false" initial-value="false" signature="true" visibility="true">      
       <attributes public="true" package="false" protected="false" private="false"/>      
@@ -144,29 +144,25 @@
       <operations public="true" package="false" protected="false" private="false"/>    
     </display>  
   </class>  
-  <generalization>    
-    <end type="SOURCE" nodeId="15"/>    
-    <end type="TARGET" nodeId="18"/>  
-  </generalization>  
   <realization>    
     <end type="SOURCE" nodeId="4"/>    
     <end type="TARGET" nodeId="1"/>  
   </realization>  
+  <realization>    
+    <end type="SOURCE" nodeId="3"/>    
+    <end type="TARGET" nodeId="2"/>  
+  </realization>  
+  <generalization>    
+    <end type="SOURCE" nodeId="13"/>    
+    <end type="TARGET" nodeId="17"/>  
+  </generalization>  
   <association>    
-    <end type="SOURCE" nodeId="5" navigable="false">      
-      <attribute name="selectedGraphFactory"/>      
-      <multiplicity minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" nodeId="2" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association>    
-    <end type="SOURCE" nodeId="6" navigable="false">      
-      <attribute name="sensorsStack">        
-        <position height="11" width="62" x="2729" y="460"/>      
+    <end type="SOURCE" nodeId="8" navigable="false">      
+      <attribute name="source">        
+        <position height="11" width="34" x="2607" y="604"/>      
       </attribute>      
-      <multiplicity minimum="0" maximum="2147483647">        
-        <position height="11" width="16" x="2798" y="460"/>      
+      <multiplicity minimum="0" maximum="1">        
+        <position height="11" width="18" x="2646" y="605"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" nodeId="7" navigable="true"/>    
@@ -185,18 +181,10 @@
     <end type="TARGET" nodeId="7" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association>    
-    <end type="SOURCE" nodeId="8" navigable="false">      
-      <attribute name="source">        
-        <position height="11" width="34" x="2607" y="604"/>      
-      </attribute>      
-      <multiplicity minimum="0" maximum="1">        
-        <position height="11" width="18" x="2646" y="605"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" nodeId="7" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
+  <nesting>    
+    <end type="SOURCE" nodeId="5"/>    
+    <end type="TARGET" nodeId="6"/>  
+  </nesting>  
   <association>    
     <bendpoint x="3072" y="204"/>    
     <bendpoint x="3072" y="392"/>    
@@ -211,26 +199,38 @@
     <end type="TARGET" nodeId="7" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <nesting>    
-    <end type="SOURCE" nodeId="5"/>    
-    <end type="TARGET" nodeId="6"/>  
-  </nesting>  
+  <association>    
+    <end type="SOURCE" nodeId="6" navigable="false">      
+      <attribute name="sensorsStack">        
+        <position height="11" width="62" x="2729" y="460"/>      
+      </attribute>      
+      <multiplicity minimum="0" maximum="2147483647">        
+        <position height="11" width="16" x="2798" y="460"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" nodeId="7" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
   <realization>    
     <end type="SOURCE" nodeId="4"/>    
     <end type="TARGET" nodeId="2"/>  
   </realization>  
-  <realization>    
-    <end type="SOURCE" nodeId="3"/>    
-    <end type="TARGET" nodeId="2"/>  
-  </realization>  
+  <association>    
+    <end type="SOURCE" nodeId="5" navigable="false">      
+      <attribute name="selectedGraphFactory"/>      
+      <multiplicity minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" nodeId="2" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <generalization>    
+    <end type="SOURCE" nodeId="15"/>    
+    <end type="TARGET" nodeId="18"/>  
+  </generalization>  
   <realization>    
     <end type="SOURCE" nodeId="3"/>    
     <end type="TARGET" nodeId="1"/>  
   </realization>  
-  <generalization>    
-    <end type="SOURCE" nodeId="13"/>    
-    <end type="TARGET" nodeId="17"/>  
-  </generalization>  
   <classifier-display autosize="true" package="false" initial-value="false" signature="true" visibility="true">    
     <attributes public="true" package="false" protected="false" private="false"/>    
     <operations public="true" package="false" protected="false" private="false"/>  

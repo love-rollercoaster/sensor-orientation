@@ -7,6 +7,6 @@ public interface GraphView {
 
     public abstract void paint(Graphics jgraphGraphics, Set<Sensor> vertices);
 
-    public abstract JPanel getControlPanel(Main main);
+    public abstract JPanel getControlPanel(GraphApplet main);
 
 }
