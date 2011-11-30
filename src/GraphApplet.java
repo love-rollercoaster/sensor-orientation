@@ -60,7 +60,7 @@ public class GraphApplet extends JApplet {
     private SpinnerNumberModel numberOfSensorsSpinnerModel;
     private JCheckBox drawSensorAntennaCheckbox;
 
-    private JPanel bottomPanel = new JPanel();
+    private JPanel topPanel = new JPanel();
 
     public static void main(String[] args) {
         JGraphAdapterDemo applet = new JGraphAdapterDemo();
@@ -79,9 +79,8 @@ public class GraphApplet extends JApplet {
         Container contentPane = this.getContentPane();
         contentPane.setBackground(ColorTheme.Black);
         contentPane.setLayout(new BorderLayout());
-
-        bottomPanel.setLayout(new WrapLayout());
-        contentPane.add(bottomPanel, BorderLayout.PAGE_START);
+        topPanel.setLayout(new WrapLayout());
+        contentPane.add(topPanel, BorderLayout.PAGE_START);
 
         initRadioButtons();
         initSpinners();
@@ -136,11 +135,6 @@ public class GraphApplet extends JApplet {
             boolean updateNumberOfSensorSpinnerModel) {
         this.vertices = jgrapht.vertexSet();
 
-        for (Sensor sensor : vertices ) {
-            System.out.println(sensor + ": " + sensor.getPosition());
-        }
-        System.out.println("");
-
         this.selectedGraphFactory = jgraphtFactory;
         initGraphFactoryPanel(jgraphtFactory);
 
@@ -155,10 +149,11 @@ public class GraphApplet extends JApplet {
     // FIXME: Side effects
     private void initGraphFactoryPanel(GraphView jgraphtFactory) {
         if (graphFactoryPanel != null) {
-            remove(graphFactoryPanel);
+            topPanel.remove(graphFactoryPanel);
         }
         graphFactoryPanel = selectedGraphFactory.getControlPanel(this);
-        getContentPane().add(graphFactoryPanel);
+        topPanel.add(graphFactoryPanel);
+        topPanel.revalidate();
     }
 
     // FIXME: Side effects
@@ -267,7 +262,7 @@ public class GraphApplet extends JApplet {
         radioPanel.add(transmissionButton);
 
         proximityButton.setSelected(true);
-        bottomPanel.add(radioPanel);
+        topPanel.add(radioPanel);
     }
 
     private static void initFrame(JGraphAdapterDemo applet) {
@@ -380,7 +375,7 @@ public class GraphApplet extends JApplet {
             }
         });
 
-        bottomPanel.add(drawSensorAntennaCheckbox);
+        topPanel.add(drawSensorAntennaCheckbox);
     }
 
     private void initSpinners() {
@@ -390,10 +385,11 @@ public class GraphApplet extends JApplet {
 
         panel.setLayout(new GridLayout(0, 2));
         panel.add(sensorRangeLabel);
+
         panel.add(makeRangeSpinner());
         panel.add(numberOfSensorLabel);
         panel.add(makeNumberOfSensorSpinner());
 
-        bottomPanel.add(panel);
+        topPanel.add(panel);
     }
 }
