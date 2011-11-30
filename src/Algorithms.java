@@ -112,85 +112,85 @@ public class Algorithms {
 
         return matching;
     }
-    
+
     public static double ComputeNetworkDiameter(Graph<Sensor, SensorEdge> graphToAnalyze){
-    	return (new FloydWarshallShortestPaths<Sensor, SensorEdge>(graphToAnalyze)).getDiameter(); 
+        return (new FloydWarshallShortestPaths<Sensor, SensorEdge>(graphToAnalyze)).getDiameter();
     }
-    
+
     public static double ComputeLengthOfRoute(GraphPath<Sensor, SensorEdge> path){
-    	double result = 0;
-    	for(SensorEdge e : path.getEdgeList()){
-    		result += e.getSource().getPosition().distance(e.getDestination().getPosition());
-    	}
-    	return result;
+        double result = 0;
+        for(SensorEdge e : path.getEdgeList()){
+            result += e.getSource().getPosition().distance(e.getDestination().getPosition());
+        }
+        return result;
     }
-    
+
     public static boolean IsStronglyConnected(TransmissionGraph graph) {
         StrongConnectivityInspector<Sensor, SensorEdge> connectivityInspector = new StrongConnectivityInspector<Sensor, SensorEdge>(graph);
         return connectivityInspector.isStronglyConnected();
-    }    
-    
-    public TestResult RunTests(Set<Sensor> vertices, PrintWriter printWriter) throws UnconnectedGraphException{
-     	
-    	ProximityGraph proxGraph = new ProximityGraph(vertices);
-    	TransmissionGraph transGraph = new TransmissionGraph(vertices);
-    	
-    	if(!IsStronglyConnected(transGraph)){
-    		throw new UnconnectedGraphException();
-    	}
-    	FloydWarshallShortestPaths<Sensor, SensorEdge> proxShortestPaths = new FloydWarshallShortestPaths<Sensor, SensorEdge>(proxGraph);
-    	FloydWarshallShortestPaths<Sensor, SensorEdge> transShortestPaths = new FloydWarshallShortestPaths<Sensor, SensorEdge>(transGraph);
-    	Set<Set<Sensor>> powerSet = makeVerticesPowerSet(vertices);
-    	
-    	double shortestPathRatio = 0;
-    	double routeLengthRatio = 0;
-    	
-    	printWriter.println("Running tests on sensors:");
-    	for(Sensor s : vertices){
-    		printWriter.println(s);	
-    	}
-    	
-    	for(Set<Sensor> sensorSet : powerSet){
-    		Sensor source = sensorSet.iterator().next();
-    		Sensor destination = sensorSet.iterator().next();
-    		printWriter.println("Sensors: Source = " + source + " Destination = " + destination);
-    		double shortestPathResult = transShortestPaths.shortestDistance(source, destination) / proxShortestPaths.shortestDistance(source, destination);
-    		double routeLengthResult = ComputeLengthOfRoute(transShortestPaths.getShortestPath(source, destination)) / ComputeLengthOfRoute(proxShortestPaths.getShortestPath(source, destination)); 
-    		printWriter.println("Shortest Path Ratio: " + shortestPathResult);
-    		printWriter.println("Route Length Ratio: " + routeLengthResult);
-    		shortestPathRatio += shortestPathResult;
-    		routeLengthRatio += routeLengthResult;
-    	}    	
-    	
-    	shortestPathRatio /= powerSet.size();
-    	routeLengthRatio /= powerSet.size();
-    	printWriter.println("Average Shortest Path Ratio: " + shortestPathRatio);
-    	printWriter.println("Average Route Length Ratio: " + routeLengthRatio);
-    	
-    	double diameterRatio = ComputeNetworkDiameter(transGraph) / ComputeNetworkDiameter(proxGraph);
-    	
-    	printWriter.println("Network Diameter Ratio: " + diameterRatio);
-    	
-    	return new TestResult(shortestPathRatio, routeLengthRatio, diameterRatio);
     }
 
-    
-    private Set<Set<Sensor>> makeVerticesPowerSet(Set<Sensor> vertices) {
-    	
-    	Set<Set<Sensor>> powerSet = new HashSet<Set<Sensor>>();
-    	
-    	for (Sensor vertexOuter : vertices) {
-    		for (Sensor vertexInner : vertices) {
-    			if (vertexOuter.equals(vertexInner)) {
-    				continue;
-    			}
-    			Set<Sensor> pair = new HashSet<Sensor>();
-    			pair.add(vertexOuter);
-    			pair.add(vertexInner);
-    			powerSet.add(pair);
-    		}
-    	}
-    	
-    	return powerSet;
+    public static TestResult RunTests(Set<Sensor> vertices, PrintWriter printWriter) throws UnconnectedGraphException{
+
+        ProximityGraph proxGraph = new ProximityGraph(vertices);
+        TransmissionGraph transGraph = new TransmissionGraph(vertices);
+
+        if(!IsStronglyConnected(transGraph)){
+            throw new UnconnectedGraphException();
+        }
+        FloydWarshallShortestPaths<Sensor, SensorEdge> proxShortestPaths = new FloydWarshallShortestPaths<Sensor, SensorEdge>(proxGraph);
+        FloydWarshallShortestPaths<Sensor, SensorEdge> transShortestPaths = new FloydWarshallShortestPaths<Sensor, SensorEdge>(transGraph);
+        Set<Set<Sensor>> powerSet = MakeVerticesPowerSet(vertices);
+
+        double shortestPathRatio = 0;
+        double routeLengthRatio = 0;
+
+        printWriter.println("Running tests on sensors:");
+        for(Sensor s : vertices){
+            printWriter.println(s);
+        }
+
+        for(Set<Sensor> sensorSet : powerSet){
+            Sensor source = sensorSet.iterator().next();
+            Sensor destination = sensorSet.iterator().next();
+            printWriter.println("Sensors: Source = " + source + " Destination = " + destination);
+            double shortestPathResult = transShortestPaths.shortestDistance(source, destination) / proxShortestPaths.shortestDistance(source, destination);
+            double routeLengthResult = ComputeLengthOfRoute(transShortestPaths.getShortestPath(source, destination)) / ComputeLengthOfRoute(proxShortestPaths.getShortestPath(source, destination));
+            printWriter.println("Shortest Path Ratio: " + shortestPathResult);
+            printWriter.println("Route Length Ratio: " + routeLengthResult);
+            shortestPathRatio += shortestPathResult;
+            routeLengthRatio += routeLengthResult;
+        }
+
+        shortestPathRatio /= powerSet.size();
+        routeLengthRatio /= powerSet.size();
+        printWriter.println("Average Shortest Path Ratio: " + shortestPathRatio);
+        printWriter.println("Average Route Length Ratio: " + routeLengthRatio);
+
+        double diameterRatio = ComputeNetworkDiameter(transGraph) / ComputeNetworkDiameter(proxGraph);
+
+        printWriter.println("Network Diameter Ratio: " + diameterRatio);
+
+        return new TestResult(shortestPathRatio, routeLengthRatio, diameterRatio);
+    }
+
+
+    public static Set<Set<Sensor>> MakeVerticesPowerSet(Set<Sensor> vertices) {
+
+        Set<Set<Sensor>> powerSet = new HashSet<Set<Sensor>>();
+
+        for (Sensor vertexOuter : vertices) {
+            for (Sensor vertexInner : vertices) {
+                if (vertexOuter.equals(vertexInner)) {
+                    continue;
+                }
+                Set<Sensor> pair = new HashSet<Sensor>();
+                pair.add(vertexOuter);
+                pair.add(vertexInner);
+                powerSet.add(pair);
+            }
+        }
+
+        return powerSet;
     }
 }
