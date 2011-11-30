@@ -3,7 +3,7 @@ COMP 3203 - Assignment 02
 
 Authors
 -------
-- Anthony D'Angelo <student#>
+- Anthony D'Angelo 100773125
 - Nicolas Porter   100760059
 
 
@@ -27,8 +27,3 @@ Compilation
 -----------
 The project can be imported and compiled in eclipse. The libraries may need to be
 added to your build path, but the project should be already configured correctly.
-
-
-Usage
------
-
