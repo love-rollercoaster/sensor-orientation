@@ -1,7 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -24,6 +23,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
@@ -100,8 +100,12 @@ public class GraphApplet extends JApplet {
                 try {
                     Algorithms.RunTests(vertices, new PrintWriter(System.out));
                 } catch (UnconnectedGraphException e1) {
-                    Dialog dialog = new Dialog(FRAME, "Error", true);
-                    dialog.setVisible(true);
+                    JOptionPane.showMessageDialog(FRAME,
+                            "Graph must be strongly connected to run tests.\n" +
+                            "Reorganize the sensors and then try again.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+
                 }
 
             }
