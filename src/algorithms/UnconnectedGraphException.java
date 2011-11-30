@@ -1,3 +1,4 @@
+package algorithms;
 
 public class UnconnectedGraphException extends Exception {
 

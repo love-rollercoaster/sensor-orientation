@@ -1,7 +1,12 @@
+package gui;
+
 import java.awt.Color;
 import java.awt.geom.Point2D;
 
 import javax.swing.BorderFactory;
+
+import network.Sensor;
+import network.SensorEdge;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;

@@ -1,3 +1,5 @@
+package gui;
+
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Shape;
@@ -12,7 +14,13 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import network.Sensor;
+import network.SensorEdge;
+import network.TransmissionGraph;
+
 import org.jgrapht.Graph;
+
+import algorithms.Algorithms;
 
 public class TransmissionGraphHelper implements GraphFactory, GraphView {
 

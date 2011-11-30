@@ -1,9 +1,13 @@
+package gui;
+
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+
+import network.Sensor;
 
 public class SensorDrawingUtils {
     private final static double SENSOR_SCREEN_WIDTH = 20.0;

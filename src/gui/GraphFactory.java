@@ -1,5 +1,10 @@
+package gui;
+
 import java.util.Set;
 
+
+import network.Sensor;
+import network.SensorEdge;
 
 import org.jgrapht.Graph;
 
