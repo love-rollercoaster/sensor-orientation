@@ -1,6 +1,8 @@
 COMP 3203 - Assignment 02
 =========================
 
+View paper here: [Project Paper](https://github.com/surjikal/sensor-orientation/blob/master/doc/Project%20Report.pdf?raw=true)
+
 ## Authors
 
 - Anthony D'Angelo
