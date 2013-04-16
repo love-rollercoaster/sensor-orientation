@@ -8,6 +8,13 @@ View paper here: [Project Paper](https://github.com/surjikal/sensor-orientation/
 - Anthony D'Angelo
 - Nicolas Porter
 
+#### Note
+
+The user interface was built in order to quickly visualize and change the parameters of the algorithm.
+
+Because of the relatively short timeline, proper UI/UX design practices were not used.
+
+
 ## Screenshots
 ![1](screenshots/1.png)
 ![2](screenshots/2.png)
